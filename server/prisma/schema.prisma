@@ -1,0 +1,35 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String    @unique
+  passwordHash  String
+  name          String
+  avatarUrl     String?
+  status        String    @default("ACTIVE") // ACTIVE, SUSPENDED, PENDING_VERIFICATION
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  roles         UserRole[]
+  farmerProfile FarmerProfile?
+  buyerProfile  BuyerProfile?
+  transporterProfile TransporterProfile?
+
+  productsSelling Product[]
+  quotesSubmitted Quote[]   @relation("BuyerQuotes")
+  quotesReceived  Quote[]   @relation("SellerQuotes")
+  ordersBought    Order[]   @relation("BuyerOrders")
+  ordersSold      Order[]   @relation("SellerOrders")
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  reviewsGiven    Review[]  @relation("Reviewer")
+  reviewsReceived Review[]  @relation("ReviewedUser")
