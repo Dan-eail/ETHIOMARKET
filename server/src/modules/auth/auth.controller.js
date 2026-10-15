@@ -138,3 +138,52 @@ export const login = async (req, res, next) => {
       message: 'Login successful',
       token,
       user: safeUser,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getMe = async (req, res) => {
+  const { passwordHash: _, ...safeUser } = req.user
+  res.json({ user: safeUser })
+}
+
+// Demo 1-click switcher for instant testing of all roles
+export const demoLogin = async (req, res, next) => {
+  try {
+    const { role } = req.body // 'FARMER', 'BUYER', 'TRANSPORTER', 'ADMIN'
+    const targetEmail =
+      role === 'ADMIN' ? 'admin@ethiomarket.et' :
+      role === 'BUYER' ? 'buyer@ethiomarket.et' :
+      role === 'TRANSPORTER' ? 'transporter@ethiomarket.et' :
+      'farmer@ethiomarket.et'
+
+    const user = await prisma.user.findUnique({
+      where: { email: targetEmail },
+      include: {
+        roles: true,
+        farmerProfile: true,
+        buyerProfile: true,
+        transporterProfile: {
+          include: { vehicles: true }
+        }
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: `Demo account for role ${role} not found. Run database seed.` })
+    }
+
+    const token = generateToken(user.id)
+    const { passwordHash: _, ...safeUser } = user
+
+    res.json({
+      message: `Switched to demo ${role} account (${safeUser.name})`,
+      token,
+      user: safeUser,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
