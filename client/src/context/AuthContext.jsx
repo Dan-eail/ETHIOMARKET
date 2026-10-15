@@ -48,3 +48,33 @@ export const AuthProvider = ({ children }) => {
     setActiveRole(primary)
     return res.user
   }
+
+  const demoSwitch = async (role) => {
+    setLoading(true)
+    try {
+      const res = await api.demoLogin(role)
+      localStorage.setItem('ethiomarket_token', res.token)
+      setUser(res.user)
+      setActiveRole(role)
+      return res.user
+    } catch (err) {
+      console.error('Demo switch failed:', err)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const logout = () => {
+    localStorage.removeItem('ethiomarket_token')
+    setUser(null)
+    setActiveRole(null)
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        activeRole,
+        setActiveRole,
