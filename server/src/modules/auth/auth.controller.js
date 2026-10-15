@@ -48,3 +48,48 @@ export const register = async (req, res, next) => {
         roles: {
           create: [{ role: validated.role, isPrimary: true }]
         },
+        ...(validated.role === 'FARMER' && {
+          farmerProfile: {
+            create: {
+              farmName: validated.farmName || `${validated.name}'s Farm`,
+              region: validated.region || 'Oromia',
+              city: validated.city || 'Meki',
+            }
+          }
+        }),
+        ...(validated.role === 'BUYER' && {
+          buyerProfile: {
+            create: {
+              businessName: validated.businessName || `${validated.name} Enterprises`,
+              businessType: 'RETAILER',
+              region: validated.region || 'Addis Ababa',
+              city: validated.city || 'Bole',
+            }
+          }
+        }),
+        ...(validated.role === 'TRANSPORTER' && {
+          transporterProfile: {
+            create: {
+              companyName: validated.companyName || `${validated.name} Logistics`,
+              regionsCovered: validated.region || 'Addis Ababa, Oromia',
+            }
+          }
+        }),
+      },
+      include: {
+        roles: true,
+        farmerProfile: true,
+        buyerProfile: true,
+        transporterProfile: true,
+      }
+    })
+
+    const token = generateToken(user.id)
+    const { passwordHash: _, ...safeUser } = user
+
+    res.status(201).json({
+      message: 'Account registered successfully',
+      token,
+      user: safeUser,
+    })
+  } catch (err) {
