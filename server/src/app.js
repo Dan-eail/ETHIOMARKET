@@ -28,3 +28,18 @@ app.use(cors({
   origin: config.clientOrigin || '*',
   credentials: true
 }))
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf
+  }
+}))
+app.use(express.urlencoded({ extended: true }))
+if (config.nodeEnv === 'development') {
+  app.use(morgan('dev'))
+}
+
+// Health Check
+app.get('/api/v1/health', (req, res) => {
+  res.json({
+    status: 'healthy',
