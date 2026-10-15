@@ -13,3 +13,13 @@ export const config = {
     authUrl: process.env.FAYDA_AUTH_URL || 'https://id.gov.et/authentication',
     tokenUrl: process.env.FAYDA_TOKEN_URL || 'https://partner.fayda.et/oauth2/token',
     clientId: process.env.FAYDA_CLIENT_ID || '',
+    clientSecret: process.env.FAYDA_CLIENT_SECRET || '',
+    redirectUri: process.env.FAYDA_REDIRECT_URI || 'http://localhost:5173/kyc/fayda/callback',
+    kycStorageDir: process.env.KYC_STORAGE_DIR || './uploads/kyc_documents',
+    isConfigured: () => Boolean(process.env.FAYDA_CLIENT_ID && process.env.FAYDA_CLIENT_SECRET)
+  },
+
+  // Chapa Payments
+  chapa: {
+    baseUrl: process.env.CHAPA_API_BASE_URL || 'https://api.chapa.co/v1',
+    secretKey: process.env.CHAPA_SECRET_KEY || '',
