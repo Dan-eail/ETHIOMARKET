@@ -93,3 +93,48 @@ export const register = async (req, res, next) => {
       user: safeUser,
     })
   } catch (err) {
+    next(err)
+  }
+}
+
+export const login = async (req, res, next) => {
+  try {
+    const { emailOrPhone, password } = req.body
+    if (!emailOrPhone || !password) {
+      return res.status(400).json({ error: 'Email/phone and password are required' })
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: emailOrPhone }, { phone: emailOrPhone }]
+      },
+      include: {
+        roles: true,
+        farmerProfile: true,
+        buyerProfile: true,
+        transporterProfile: {
+          include: { vehicles: true }
+        }
+      }
+    })
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials. User not found.' })
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash)
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid password. Please check your credentials.' })
+    }
+
+    if (user.status === 'SUSPENDED') {
+      return res.status(403).json({ error: 'Account suspended. Contact support.' })
+    }
+
+    const token = generateToken(user.id)
+    const { passwordHash: _, ...safeUser } = user
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: safeUser,
