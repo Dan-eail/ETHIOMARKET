@@ -88,3 +88,53 @@ async function main() {
           zone: 'Jimma / Guji',
           woreda: 'Gera',
           farmSizeHectares: 25.0,
+          experienceYears: 18,
+          organicCertified: true,
+          bio: 'Producer of high-altitude Ethiopian Arabica coffee beans and Magna white teff from Bishoftu highlands.',
+          verifiedBadge: true,
+        }
+      }
+    }
+  })
+
+  // Buyer: Almaz (Wholesaler & Commercial Distributor)
+  const buyerUser = await prisma.user.create({
+    data: {
+      email: 'buyer@ethiomarket.et',
+      phone: '+251922334455',
+      name: 'Almaz Kebede',
+      passwordHash,
+      status: 'ACTIVE',
+      isVerified: true,
+      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+      roles: {
+        create: [
+          { role: 'BUYER', isPrimary: true }
+        ]
+      },
+      buyerProfile: {
+        create: {
+          businessName: 'Addis Fresh Produce Supply Co.',
+          businessType: 'WHOLESALER',
+          tinNumber: '004829104',
+          region: 'Addis Ababa',
+          city: 'Bole Subcity',
+          deliveryAddress: 'Bole Medhanialem, Commercial Logistics Hub Warehouse #4',
+        }
+      }
+    }
+  })
+
+  // Transporter: Kebede (Logistics Provider)
+  const transporterUser = await prisma.user.create({
+    data: {
+      email: 'transporter@ethiomarket.et',
+      phone: '+251933445566',
+      name: 'Kebede Tessema',
+      passwordHash,
+      status: 'ACTIVE',
+      isVerified: true,
+      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+      roles: {
+        create: [
+          { role: 'TRANSPORTER', isPrimary: true }
