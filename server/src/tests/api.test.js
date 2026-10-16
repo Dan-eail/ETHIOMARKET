@@ -72,3 +72,34 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
     assert.ok(adminData.token)
     adminToken = adminData.token
   })
+
+  await t.test('2. Marketplace Product Search & Filtering (Protected Access & Public Preview)', async () => {
+    // 2a. Unauthenticated product search must be rejected with 401
+    const unauthRes = await fetch(`${BASE_URL}/products?search=onions`)
+    assert.strictEqual(unauthRes.status, 401)
+    const unauthData = await unauthRes.json()
+    assert.strictEqual(unauthData.code, 'AUTH_REQUIRED')
+
+    // 2b. Authenticated buyer search should succeed
+    const res = await fetch(`${BASE_URL}/products?search=onions`, {
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
+    const data = await res.json()
+    assert.strictEqual(res.status, 200)
+    assert.ok(data.products.length >= 1)
+    assert.ok(data.products[0].title.toLowerCase().includes('onion'))
+
+    // 2c. Public preview without search filters allows guest access with sanitized fields
+    const previewRes = await fetch(`${BASE_URL}/products?limit=6`)
+    assert.strictEqual(previewRes.status, 200)
+    const previewData = await previewRes.json()
+    assert.ok(Array.isArray(previewData.products))
+    assert.ok(previewData.products.length <= 6)
+    if (previewData.products.length > 0) {
+      assert.strictEqual(previewData.products[0].seller?.phone, undefined)
+      assert.strictEqual(previewData.products[0].seller?.email, undefined)
+    }
+
+    // 2d. Protected product details requires authentication
+    if (data.products[0]?.id) {
+      const unauthDetail = await fetch(`${BASE_URL}/products/${data.products[0].id}`)
