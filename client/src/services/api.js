@@ -38,3 +38,23 @@ export const api = {
   // Products
   getProducts: (params = {}) => {
     const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== '') query.append(key, val)
+    })
+    return apiRequest(`/products?${query.toString()}`)
+  },
+  getProductById: (id) => apiRequest(`/products/${id}`),
+  createProduct: (payload) => apiRequest('/products', { method: 'POST', body: JSON.stringify(payload) }),
+  updateProduct: (id, payload) => apiRequest(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateStock: (id, payload) => apiRequest(`/products/${id}/stock`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  matchSuppliers: (payload) => apiRequest('/products/match-suppliers', { method: 'POST', body: JSON.stringify(payload) }),
+  getFarmerListings: () => apiRequest('/products/farmer/my-listings'),
+
+  // Categories
+  getCategories: () => apiRequest('/categories'),
+
+  // Market Prices Intelligence
+  getMarketPrices: (params = {}) => {
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== '') query.append(key, val)
