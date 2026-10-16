@@ -43,3 +43,13 @@ if (config.nodeEnv === 'development') {
 app.get('/api/v1/health', (req, res) => {
   res.json({
     status: 'healthy',
+    product: 'EthioMarket Agricultural Platform API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  })
+})
+
+// Mount Versioned API Modules
+app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/categories', categoriesRoutes)
+app.use('/api/v1/products', productsRoutes)
