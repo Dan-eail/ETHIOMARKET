@@ -43,3 +43,48 @@ async function main() {
       passwordHash,
       status: 'ACTIVE',
       isVerified: true,
+      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      roles: {
+        create: [
+          { role: 'FARMER', isPrimary: true }
+        ]
+      },
+      farmerProfile: {
+        create: {
+          farmName: 'Rift Valley Organic Agro',
+          region: 'Oromia',
+          zone: 'East Shewa',
+          woreda: 'Meki / Ziway',
+          kebele: '02 Kebele',
+          farmSizeHectares: 14.5,
+          experienceYears: 12,
+          organicCertified: true,
+          bio: 'Specializing in premium fresh red onions, export tomatoes, and crisp green peppers nurtured in the fertile soils of the Ethiopian Rift Valley.',
+          verifiedBadge: true,
+        }
+      }
+    }
+  })
+
+  // Second Farmer: Chaltu (Specialty Coffee & Teff)
+  const farmerChaltu = await prisma.user.create({
+    data: {
+      email: 'chaltu@ethiomarket.et',
+      phone: '+251911998877',
+      name: 'Chaltu Gemechu',
+      passwordHash,
+      status: 'ACTIVE',
+      isVerified: true,
+      avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+      roles: {
+        create: [
+          { role: 'FARMER', isPrimary: true }
+        ]
+      },
+      farmerProfile: {
+        create: {
+          farmName: 'Keffa & Yirgacheffe Heritage Farms',
+          region: 'Oromia',
+          zone: 'Jimma / Guji',
+          woreda: 'Gera',
+          farmSizeHectares: 25.0,
