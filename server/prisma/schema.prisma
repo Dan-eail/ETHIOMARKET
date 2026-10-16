@@ -33,3 +33,33 @@ model User {
   auditLogs       AuditLog[]
   reviewsGiven    Review[]  @relation("Reviewer")
   reviewsReceived Review[]  @relation("ReviewedUser")
+  favorites       Favorite[]
+  verificationRecords VerificationRecord[]
+  kycReviewsProcessed VerificationRecord[] @relation("KYCReviewer")
+  paymentsMade        Payment[]
+  refundsRequested    RefundRecord[]       @relation("RefundRequester")
+  refundsProcessed    RefundRecord[]       @relation("RefundProcessor")
+}
+
+model UserRole {
+  id         String   @id @default(cuid())
+  userId     String
+  role       String   // FARMER, BUYER, TRANSPORTER, ADMIN
+  isPrimary  Boolean  @default(false)
+  assignedAt DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+}
+
+model FarmerProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  farmName            String
+  region              String   // Oromia, Amhara, Sidama, SNNPR, etc.
+  zone                String?
+  woreda              String?
+  kebele              String?
+  farmSizeHectares    Float?
+  experienceYears     Int?
