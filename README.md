@@ -28,3 +28,33 @@
      - Password for all demo accounts: `Password123!`
 
 4. **Bilingual Ready**:
+   - Interactive language toggle in the header supporting **English** and **Amharic (አማርኛ)**.
+
+---
+
+## 🏗️ Architecture & Technology Stack
+
+```
+ETHIOMARKET/
+├── client/                      # React 18 + Vite Frontend
+│   ├── src/
+│   │   ├── components/         # Navbar, Footer, ProductCard, Modals
+│   │   ├── context/            # AuthContext (RBAC), LanguageContext (EN/AM)
+│   │   ├── pages/              # HomePage, Marketplace, ProductDetail, Dashboards
+│   │   ├── services/           # api.js client
+│   │   └── index.css           # Deep agricultural green & warm off-white design system
+├── server/                      # Node.js + Express REST API
+│   ├── prisma/
+│   │   ├── schema.prisma       # Relational models: User, Role, Quotes, Orders, Deliveries
+│   │   └── seed.js             # Realistic Ethiopian produce & users seed data
+│   ├── src/
+│   │   ├── config/             # DB & env configuration
+│   │   ├── middleware/         # authenticate.js, authorize.js (RBAC), errorHandler.js
+│   │   ├── modules/            # auth, products, categories, quotes, orders, deliveries, admin
+│   │   ├── tests/              # api.test.js automated test suite
+│   │   ├── app.js
+│   │   └── server.js           # Express + Socket.IO real-time server
+└── package.json                 # Unified workspace scripts
+```
+
+---
