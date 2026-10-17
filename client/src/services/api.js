@@ -58,3 +58,18 @@ export const api = {
     const query = new URLSearchParams()
     Object.entries(params).forEach(([key, val]) => {
       if (val !== undefined && val !== null && val !== '') query.append(key, val)
+    })
+    return apiRequest(`/market-prices?${query.toString()}`)
+  },
+
+  // Favorites
+  getFavorites: () => apiRequest('/favorites'),
+  toggleFavorite: (productId) => apiRequest(`/favorites/${productId}`, { method: 'POST' }),
+
+  // Quotes
+  createQuote: (payload) => apiRequest('/quotes', { method: 'POST', body: JSON.stringify(payload) }),
+  getQuotes: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/quotes${query ? `?${query}` : ''}`)
+  },
+  getQuoteById: (id) => apiRequest(`/quotes/${id}`),
