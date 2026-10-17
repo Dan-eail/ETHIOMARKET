@@ -268,3 +268,63 @@ export const updateProduct = async (req, res, next) => {
       variety,
       grade,
       unit,
+      minOrderQty,
+      isOrganic,
+      region,
+      city
+    } = req.body
+
+    const updated = await prisma.product.update({
+      where: { id },
+      data: {
+        ...(title && { title }),
+        ...(description && { description }),
+        ...(pricePerUnit !== undefined && { pricePerUnit: parseFloat(pricePerUnit) }),
+        ...(availableQty !== undefined && { availableQty: parseFloat(availableQty) }),
+        ...(status && { status }),
+        ...(variety && { variety }),
+        ...(grade && { grade }),
+        ...(unit && { unit }),
+        ...(minOrderQty !== undefined && { minOrderQty: parseFloat(minOrderQty) }),
+        ...(isOrganic !== undefined && { isOrganic: Boolean(isOrganic) }),
+        ...(region && { region }),
+        ...(city && { city }),
+      },
+      include: {
+        images: true,
+        category: true,
+      }
+    })
+
+    res.json({ message: 'Product updated successfully', product: updated })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getFarmerListings = async (req, res, next) => {
+  try {
+    const listings = await prisma.product.findMany({
+      where: { sellerId: req.user.id },
+      include: {
+        category: true,
+        images: true,
+        _count: {
+          select: { quotes: true, orderItems: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    res.json({ listings })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const updateStock = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { availableQty, lowStockThreshold } = req.body
+
+    const existing = await prisma.product.findUnique({ where: { id } })
