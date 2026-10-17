@@ -208,3 +208,63 @@ export const createProduct = async (req, res, next) => {
         slug: validated.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
         description: validated.description,
         variety: validated.variety,
+        grade: validated.grade,
+        harvestDate: validated.harvestDate ? new Date(validated.harvestDate) : new Date(),
+        unit: validated.unit,
+        pricePerUnit: validated.pricePerUnit,
+        minOrderQty: validated.minOrderQty,
+        availableQty: validated.availableQty,
+        region: validated.region,
+        city: validated.city,
+        specificLocation: validated.specificLocation,
+        isOrganic: validated.isOrganic,
+        status: 'PUBLISHED',
+        images: {
+          create: (validated.imageUrls && validated.imageUrls.length > 0
+            ? validated.imageUrls
+            : ['https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&auto=format&fit=crop&q=80']
+          ).map((url, idx) => ({
+            url,
+            isPrimary: idx === 0,
+            sortOrder: idx
+          }))
+        }
+      },
+      include: {
+        images: true,
+        category: true,
+      }
+    })
+
+    res.status(201).json({
+      message: 'Produce listing created successfully',
+      product
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const updateProduct = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const existing = await prisma.product.findUnique({ where: { id } })
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Product not found' })
+    }
+
+    // Verify ownership or ADMIN
+    if (existing.sellerId !== req.user.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Forbidden: You cannot modify listings belonging to another producer' })
+    }
+
+    const {
+      title,
+      description,
+      pricePerUnit,
+      availableQty,
+      status,
+      variety,
+      grade,
+      unit,
