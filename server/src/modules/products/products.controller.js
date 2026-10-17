@@ -142,3 +142,69 @@ export const getProducts = async (req, res, next) => {
     next(err)
   }
 }
+
+export const getProductById = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        images: { orderBy: { sortOrder: 'asc' } },
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            isVerified: true,
+            avatarUrl: true,
+            farmerProfile: true,
+          }
+        }
+      }
+    })
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product listing not found' })
+    }
+
+    // Increment views count non-blockingly
+    prisma.product.update({
+      where: { id },
+      data: { viewsCount: { increment: 1 } }
+    }).catch(err => console.error('Failed to increment views', err))
+
+    // Fetch related products in same category
+    const related = await prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        id: { not: id },
+        status: 'PUBLISHED'
+      },
+      include: {
+        images: true,
+        category: true,
+        seller: { select: { id: true, name: true, isVerified: true } }
+      },
+      take: 4
+    })
+
+    res.json({ product, related })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const createProduct = async (req, res, next) => {
+  try {
+    const validated = productCreateSchema.parse(req.body)
+
+    const product = await prisma.product.create({
+      data: {
+        sellerId: req.user.id,
+        categoryId: validated.categoryId,
+        title: validated.title,
+        slug: validated.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
+        description: validated.description,
+        variety: validated.variety,
