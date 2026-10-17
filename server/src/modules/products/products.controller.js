@@ -23,3 +23,58 @@ export const getProducts = async (req, res, next) => {
   try {
     const {
       search,
+      category,
+      region,
+      unit,
+      minPrice,
+      maxPrice,
+      isOrganic,
+      sort = 'newest',
+      page = 1,
+      limit = 12
+    } = req.query
+
+    // Check if protected marketplace search/filtering is being performed
+    const hasSearchOrFilter = Boolean(
+      (search && search.trim()) ||
+      (category && category.trim()) ||
+      (region && region !== 'all') ||
+      (unit && unit !== 'all') ||
+      minPrice ||
+      maxPrice ||
+      isOrganic === 'true'
+    )
+
+    // Unauthenticated visitors are restricted from protected product search & filters
+    if (hasSearchOrFilter && !req.user) {
+      return res.status(401).json({
+        error: 'Authentication required to search or filter marketplace products',
+        code: 'AUTH_REQUIRED'
+      })
+    }
+
+    const where = {
+      status: 'PUBLISHED',
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { description: { contains: search } },
+        { variety: { contains: search } },
+        { city: { contains: search } },
+      ]
+    }
+
+    if (category) {
+      where.category = {
+        slug: category
+      }
+    }
+
+    if (region && region !== 'all') {
+      where.region = region
+    }
+
+    if (unit && unit !== 'all') {
+      where.unit = unit
