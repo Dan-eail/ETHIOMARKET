@@ -103,3 +103,43 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
     // 2d. Protected product details requires authentication
     if (data.products[0]?.id) {
       const unauthDetail = await fetch(`${BASE_URL}/products/${data.products[0].id}`)
+      assert.strictEqual(unauthDetail.status, 401)
+
+      const authDetail = await fetch(`${BASE_URL}/products/${data.products[0].id}`, {
+        headers: { 'Authorization': `Bearer ${buyerToken}` }
+      })
+      assert.strictEqual(authDetail.status, 200)
+    }
+  })
+
+  await t.test('3. Farmer creates a new product listing', async () => {
+    // Get category id
+    const catRes = await fetch(`${BASE_URL}/categories`)
+    const catData = await catRes.json()
+    const vegCat = catData.categories.find(c => c.slug === 'vegetables') || catData.categories[0]
+
+    const productPayload = {
+      title: 'Bale Organic Highland Garlic (ነጭ ሽንኩርት)',
+      categoryId: vegCat.id,
+      description: 'Mountain-grown pungent white garlic from Bale highlands. High allicin content and excellent dry storage.',
+      variety: 'Tsedey Garlic',
+      grade: 'Grade 1 Export',
+      unit: 'QUINTAL',
+      pricePerUnit: 12500,
+      minOrderQty: 1,
+      availableQty: 40,
+      region: 'Oromia',
+      city: 'Robe / Bale',
+      isOrganic: true,
+      imageUrls: ['https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&auto=format&fit=crop&q=80']
+    }
+
+    const res = await fetch(`${BASE_URL}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${farmerToken}`
+      },
+      body: JSON.stringify(productPayload)
+    })
+    const data = await res.json()
