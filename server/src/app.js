@@ -53,3 +53,8 @@ app.get('/api/v1/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/categories', categoriesRoutes)
 app.use('/api/v1/products', productsRoutes)
+app.use('/api/v1/quotes', quotesRoutes)
+app.use('/api/v1/orders', ordersRoutes)
+app.use('/api/v1/deliveries', deliveriesRoutes)
+app.use('/api/v1/admin', adminRoutes)
+app.use('/api/v1/notifications', notificationsRoutes)
