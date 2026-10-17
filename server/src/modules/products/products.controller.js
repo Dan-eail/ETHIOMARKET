@@ -328,3 +328,53 @@ export const updateStock = async (req, res, next) => {
     const { availableQty, lowStockThreshold } = req.body
 
     const existing = await prisma.product.findUnique({ where: { id } })
+    if (!existing) return res.status(404).json({ error: 'Product not found' })
+    if (existing.sellerId !== req.user.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Forbidden: You do not own this product' })
+    }
+
+    const qty = parseFloat(availableQty)
+    if (isNaN(qty) || qty < 0) {
+      return res.status(400).json({ error: 'Invalid quantity. Must be a non-negative number.' })
+    }
+
+    const updated = await prisma.product.update({
+      where: { id },
+      data: {
+        availableQty: qty,
+        status: qty === 0 ? 'SOLD_OUT' : (existing.status === 'SOLD_OUT' ? 'PUBLISHED' : existing.status),
+        ...(lowStockThreshold !== undefined && { lowStockThreshold: parseFloat(lowStockThreshold) })
+      }
+    })
+
+    res.json({ message: 'Stock updated successfully', product: updated })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const matchSuppliers = async (req, res, next) => {
+  try {
+    const { cropQuery, requestedQty, region, isOrganic } = req.body
+
+    if (!cropQuery || !cropQuery.trim()) {
+      return res.status(400).json({ error: 'Crop query is required for supplier matching' })
+    }
+
+    const targetQty = parseFloat(requestedQty) || 1
+
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'PUBLISHED',
+        OR: [
+          { title: { contains: cropQuery.trim() } },
+          { description: { contains: cropQuery.trim() } },
+          { variety: { contains: cropQuery.trim() } }
+        ]
+      },
+      include: {
+        category: true,
+        images: true,
+        seller: {
+          select: {
+            id: true,
