@@ -378,3 +378,50 @@ export const matchSuppliers = async (req, res, next) => {
         seller: {
           select: {
             id: true,
+            name: true,
+            isVerified: true,
+            farmerProfile: true,
+          }
+        }
+      }
+    })
+
+    const ranked = products.map((prod) => {
+      let score = 50
+      const reasons = []
+
+      if (prod.availableQty >= targetQty) {
+        score += 25
+        reasons.push(`In stock: ${prod.availableQty} ${prod.unit} available (meets your target of ${targetQty} ${prod.unit})`)
+      } else {
+        reasons.push(`Partial stock: ${prod.availableQty} ${prod.unit} available`)
+      }
+
+      if (region && prod.region.toLowerCase().includes(region.toLowerCase())) {
+        score += 15
+        reasons.push(`Direct regional proximity in ${prod.city}, ${prod.region}`)
+      }
+
+      if (prod.seller?.isVerified || prod.seller?.farmerProfile?.verifiedBadge) {
+        score += 10
+        reasons.push('Verified agricultural cooperative license')
+      }
+
+      if (isOrganic && prod.isOrganic) {
+        score += 10
+        reasons.push('Certified 100% Organic harvest')
+      }
+
+      return {
+        product: prod,
+        matchScore: Math.min(score, 100),
+        matchReasons: reasons
+      }
+    }).sort((a, b) => b.matchScore - a.matchScore)
+
+    res.json({ matches: ranked, totalFound: ranked.length })
+  } catch (err) {
+    next(err)
+  }
+}
+
