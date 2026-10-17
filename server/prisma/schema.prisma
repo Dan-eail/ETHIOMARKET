@@ -63,3 +63,53 @@ model FarmerProfile {
   kebele              String?
   farmSizeHectares    Float?
   experienceYears     Int?
+  organicCertified    Boolean  @default(false)
+  bio                 String?
+  verifiedBadge       Boolean  @default(false)
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BuyerProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  businessName  String
+  businessType  String   // WHOLESALER, RETAILER, RESTAURANT, EXPORTER, INDIVIDUAL
+  tinNumber     String?
+  region        String
+  city          String
+  deliveryAddress String?
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TransporterProfile {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  companyName    String
+  licenseNumber  String?
+  regionsCovered String?   // Comma separated or JSON string
+  verified       Boolean   @default(false)
+  rating         Float     @default(5.0)
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicles       Vehicle[]
+  deliveries     Delivery[]
+}
+
+model Vehicle {
+  id             String    @id @default(cuid())
+  transporterId  String
+  plateNumber    String    @unique
+  vehicleType    String    // PICKUP, ISUZU, FSR, TRAILER, REFRIGERATED
+  capacityTons   Float
+  modelYear      Int?
+  active         Boolean   @default(true)
+  verified       Boolean   @default(false)
+
+  transporter    TransporterProfile @relation(fields: [transporterId], references: [id], onDelete: Cascade)
+  deliveries     Delivery[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
