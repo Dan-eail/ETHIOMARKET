@@ -183,3 +183,38 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${farmerToken}`
       },
+      body: JSON.stringify(counterPayload)
+    })
+    const data = await res.json()
+    assert.strictEqual(res.status, 200)
+    assert.strictEqual(data.quote.status, 'COUNTERED')
+    assert.strictEqual(data.quote.offeredPrice, 12100)
+  })
+
+  await t.test('6. Buyer accepts quote terms -> Creates Confirmed Order & reserves stock', async () => {
+    const res = await fetch(`${BASE_URL}/quotes/${quoteId}/accept`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${buyerToken}`
+      }
+    })
+    const data = await res.json()
+    assert.strictEqual(res.status, 200)
+    assert.strictEqual(data.quote.status, 'ACCEPTED')
+    assert.ok(data.order.id)
+    orderId = data.order.id
+    assert.strictEqual(data.order.subtotal, 121000) // 10 * 12100
+  })
+
+  await t.test('7. Transporter views available delivery jobs and claims assignment', async () => {
+    // Check available deliveries
+    const resAvail = await fetch(`${BASE_URL}/deliveries/available`, {
+      headers: { 'Authorization': `Bearer ${transporterToken}` }
+    })
+    const availData = await resAvail.json()
+    assert.strictEqual(resAvail.status, 200)
+    assert.ok(availData.deliveries.length >= 1)
+
+    // Find delivery corresponding to our order
+    const delivery = availData.deliveries.find(d => d.orderId === orderId) || availData.deliveries[0]
+    assert.ok(delivery)
