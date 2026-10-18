@@ -113,3 +113,53 @@ model Vehicle {
 
 model Category {
   id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?   // Lucide icon name or emoji
+  imageUrl    String?
+
+  products    Product[]
+}
+
+model Product {
+  id                 String    @id @default(cuid())
+  sellerId           String
+  categoryId         String
+  title              String
+  slug               String?
+  description        String
+  variety            String?   // e.g., 'Magna Teff', 'Sidama Heirloom'
+  grade              String?   // 'Grade 1 Export', 'Standard Commercial'
+  harvestDate        DateTime?
+  unit               String    // KG, QUINTAL, TON, CRATE, SACK
+  pricePerUnit       Float     // Numerical in ETB
+  currency           String    @default("ETB")
+  minOrderQty        Float     @default(1)
+  availableQty       Float     // Current stock
+  reservedQty        Float     @default(0)
+  soldQty            Float     @default(0)
+  lowStockThreshold  Float     @default(10)
+  region             String
+  city               String
+  specificLocation   String?
+  status             String    @default("PUBLISHED") // DRAFT, PUBLISHED, PAUSED, SOLD_OUT, ARCHIVED
+  isOrganic          Boolean   @default(false)
+  featured           Boolean   @default(false)
+  viewsCount         Int       @default(0)
+  inquiriesCount     Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  seller             User          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category           Category      @relation(fields: [categoryId], references: [id])
+  images             ProductImage[]
+  quotes             Quote[]
+  orderItems         OrderItem[]
+  favorites          Favorite[]
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
