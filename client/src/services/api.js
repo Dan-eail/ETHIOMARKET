@@ -73,3 +73,13 @@ export const api = {
     return apiRequest(`/quotes${query ? `?${query}` : ''}`)
   },
   getQuoteById: (id) => apiRequest(`/quotes/${id}`),
+  counterQuote: (id, payload) => apiRequest(`/quotes/${id}/counter`, { method: 'POST', body: JSON.stringify(payload) }),
+  acceptQuote: (id) => apiRequest(`/quotes/${id}/accept`, { method: 'POST' }),
+
+  // Orders
+  createDirectOrder: (payload) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(payload) }),
+  getOrders: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/orders${query ? `?${query}` : ''}`)
+  },
+  getOrderById: (id) => apiRequest(`/orders/${id}`),
