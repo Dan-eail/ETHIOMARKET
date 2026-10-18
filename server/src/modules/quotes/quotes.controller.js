@@ -278,3 +278,63 @@ export const acceptQuote = async (req, res, next) => {
           totalAmount,
           currency: quote.currency,
           status: 'CONFIRMED',
+          paymentStatus: 'CASH_ON_DELIVERY',
+          paymentMethod: 'CASH_ON_DELIVERY',
+          deliveryAddressSnapshot: deliveryAddress,
+          notes: `Created from accepted Quote #${quote.quoteNumber}. Agreed rate: ${agreedPrice} ETB/${quote.unit}`,
+          items: {
+            create: [
+              {
+                productId: quote.productId,
+                productName: quote.product.title,
+                productUnit: quote.unit,
+                quantity: agreedQty,
+                unitPrice: agreedPrice,
+                totalPrice: subtotal
+              }
+            ]
+          }
+        }
+      })
+
+      // Create Delivery Request for Transporters
+      const deliveryNumber = 'DEL-' + Date.now().toString().slice(-6)
+      await tx.delivery.create({
+        data: {
+          deliveryNumber,
+          orderId: order.id,
+          pickupRegion: quote.product.region,
+          pickupCity: quote.product.city,
+          pickupAddress: quote.product.specificLocation || `${quote.product.city} Farm Depot`,
+          dropoffRegion: quote.buyer.buyerProfile?.region || 'Addis Ababa',
+          dropoffCity: quote.buyer.buyerProfile?.city || 'Bole',
+          dropoffAddress: deliveryAddress,
+          cargoWeightQuintals: quote.unit === 'QUINTAL' ? agreedQty : (agreedQty / 100),
+          deliveryFee,
+          status: 'REQUESTED',
+          recipientName: quote.buyer.name,
+          recipientPhone: quote.buyer.phone,
+        }
+      })
+
+      // Notification
+      await tx.notification.create({
+        data: {
+          userId: quote.buyerId === req.user.id ? quote.sellerId : quote.buyerId,
+          title: 'Quote Accepted & Order Created! 🎉',
+          message: `Negotiation terms agreed! Order #${orderNumber} has been generated. Total: ${totalAmount} ETB`,
+          type: 'ORDER',
+          linkUrl: '/dashboard/orders'
+        }
+      })
+
+      return { order, quote: updatedQuote }
+    })
+
+    res.json({
+      message: 'Quote accepted successfully and order created!',
+      order: result.order,
+      quote: result.quote
+    })
+  } catch (err) {
+    next(err)
