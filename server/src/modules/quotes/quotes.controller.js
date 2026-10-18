@@ -108,3 +108,53 @@ export const getQuotes = async (req, res, next) => {
     })
 
     res.json({ quotes })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getQuoteById = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    const quote = await prisma.quote.findUnique({
+      where: { id },
+      include: {
+        product: { include: { images: true, category: true } },
+        buyer: { select: { id: true, name: true, phone: true, buyerProfile: true } },
+        seller: { select: { id: true, name: true, phone: true, farmerProfile: true } },
+        history: { orderBy: { createdAt: 'asc' } }
+      }
+    })
+
+    if (!quote) return res.status(404).json({ error: 'Quote not found' })
+
+    // Verify participant
+    if (quote.buyerId !== req.user.id && quote.sellerId !== req.user.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Access denied: You are not a party to this negotiation' })
+    }
+
+    res.json({ quote })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const counterQuote = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { proposedPrice, proposedQty, note } = req.body
+
+    const quote = await prisma.quote.findUnique({ where: { id } })
+    if (!quote) return res.status(404).json({ error: 'Quote not found' })
+
+    const isBuyer = quote.buyerId === req.user.id
+    const isSeller = quote.sellerId === req.user.id
+
+    if (!isBuyer && !isSeller) {
+      return res.status(403).json({ error: 'Not authorized to negotiate this quote' })
+    }
+
+    if (quote.status === 'ACCEPTED' || quote.status === 'REJECTED') {
+      return res.status(400).json({ error: `Cannot counter a quote that is already ${quote.status}` })
+    }
