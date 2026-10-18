@@ -158,3 +158,63 @@ export const counterQuote = async (req, res, next) => {
     if (quote.status === 'ACCEPTED' || quote.status === 'REJECTED') {
       return res.status(400).json({ error: `Cannot counter a quote that is already ${quote.status}` })
     }
+
+    const price = parseFloat(proposedPrice) || quote.requestedPrice
+    const qty = parseFloat(proposedQty) || quote.requestedQty
+
+    // Create history item and update quote
+    const [updatedQuote] = await prisma.$transaction([
+      prisma.quote.update({
+        where: { id },
+        data: {
+          status: 'COUNTERED',
+          offeredPrice: price,
+          requestedQty: qty,
+          counterpartyNote: note,
+          updatedAt: new Date(),
+        },
+        include: {
+          product: true,
+          buyer: true,
+          seller: true,
+          history: { orderBy: { createdAt: 'asc' } }
+        }
+      }),
+      prisma.quoteHistory.create({
+        data: {
+          quoteId: id,
+          senderId: req.user.id,
+          senderRole: isBuyer ? 'BUYER' : 'SELLER',
+          proposedPrice: price,
+          proposedQty: qty,
+          note: note || 'Counter offer'
+        }
+      }),
+      prisma.notification.create({
+        data: {
+          userId: isBuyer ? quote.sellerId : quote.buyerId,
+          title: 'Counter-Offer Received',
+          message: `${req.user.name} submitted a counter-offer of ${price} ETB/${quote.unit} for ${qty} ${quote.unit}`,
+          type: 'QUOTE',
+          linkUrl: isBuyer ? '/dashboard/farmer/quotes' : '/dashboard/buyer/quotes'
+        }
+      })
+    ])
+
+    res.json({ message: 'Counter-offer sent successfully', quote: updatedQuote })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// Accept quote and atomically create confirmed order & reserve inventory!
+export const acceptQuote = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const quote = await prisma.quote.findUnique({
+      where: { id },
+      include: {
+        product: true,
+        buyer: { include: { buyerProfile: true } },
+        seller: { include: { farmerProfile: true } }
+      }
