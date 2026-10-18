@@ -143,3 +143,43 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
       body: JSON.stringify(productPayload)
     })
     const data = await res.json()
+    assert.strictEqual(res.status, 201)
+    assert.ok(data.product.id)
+    createdProductId = data.product.id
+  })
+
+  await t.test('4. Buyer requests quotation negotiation', async () => {
+    const quotePayload = {
+      productId: createdProductId,
+      requestedQty: 10,
+      requestedPrice: 11800,
+      note: 'Can you supply 10 quintals of Bale garlic delivered to our Addis warehouse?'
+    }
+
+    const res = await fetch(`${BASE_URL}/quotes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${buyerToken}`
+      },
+      body: JSON.stringify(quotePayload)
+    })
+    const data = await res.json()
+    assert.strictEqual(res.status, 201)
+    assert.ok(data.quote.id)
+    quoteId = data.quote.id
+  })
+
+  await t.test('5. Farmer counters with counter-offer', async () => {
+    const counterPayload = {
+      proposedPrice: 12100,
+      proposedQty: 10,
+      note: 'Best price for Grade 1 cured garlic is 12,100 ETB per quintal.'
+    }
+
+    const res = await fetch(`${BASE_URL}/quotes/${quoteId}/counter`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${farmerToken}`
+      },
