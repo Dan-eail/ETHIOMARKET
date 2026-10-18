@@ -338,3 +338,5 @@ export const acceptQuote = async (req, res, next) => {
     })
   } catch (err) {
     next(err)
+  }
+}
