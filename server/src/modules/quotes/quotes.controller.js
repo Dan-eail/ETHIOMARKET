@@ -58,3 +58,53 @@ export const createQuote = async (req, res, next) => {
         }
       },
       include: {
+        product: { include: { images: true } },
+        buyer: { select: { id: true, name: true } },
+        seller: { select: { id: true, name: true } }
+      }
+    })
+
+    // Create notification for seller
+    await prisma.notification.create({
+      data: {
+        userId: product.sellerId,
+        title: 'New Quote Request',
+        message: `${req.user.name} offered ${validated.requestedPrice} ETB/${product.unit} for ${validated.requestedQty} ${product.unit} of ${product.title}`,
+        type: 'QUOTE',
+        linkUrl: `/dashboard/farmer/quotes`
+      }
+    })
+
+    res.status(201).json({ message: 'Quotation request submitted', quote })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getQuotes = async (req, res, next) => {
+  try {
+    const isFarmer = req.userRoles.includes('FARMER')
+    const roleFilter = req.query.as === 'seller' ? { sellerId: req.user.id } :
+                       req.query.as === 'buyer' ? { buyerId: req.user.id } :
+                       { OR: [{ buyerId: req.user.id }, { sellerId: req.user.id }] }
+
+    const quotes = await prisma.quote.findMany({
+      where: roleFilter,
+      include: {
+        product: {
+          include: { images: true }
+        },
+        buyer: {
+          select: { id: true, name: true, phone: true, buyerProfile: true }
+        },
+        seller: {
+          select: { id: true, name: true, phone: true, farmerProfile: true }
+        },
+        history: {
+          orderBy: { createdAt: 'desc' }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    })
+
+    res.json({ quotes })
