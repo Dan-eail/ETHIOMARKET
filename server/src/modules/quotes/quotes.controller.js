@@ -218,3 +218,63 @@ export const acceptQuote = async (req, res, next) => {
         buyer: { include: { buyerProfile: true } },
         seller: { include: { farmerProfile: true } }
       }
+    })
+
+    if (!quote) return res.status(404).json({ error: 'Quote not found' })
+
+    // Buyer or Seller can accept agreed terms
+    if (quote.buyerId !== req.user.id && quote.sellerId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to accept this quote' })
+    }
+
+    if (quote.status === 'ACCEPTED') {
+      return res.status(400).json({ error: 'Quote has already been accepted and converted to an order' })
+    }
+
+    const agreedPrice = quote.offeredPrice || quote.requestedPrice
+    const agreedQty = quote.requestedQty
+    const subtotal = agreedPrice * agreedQty
+    const deliveryFee = 3500.0 // Standard estimated regional haulage
+    const totalAmount = subtotal + deliveryFee
+
+    // Atomic execution with stock reservation
+    const result = await prisma.$transaction(async (tx) => {
+      // Check current stock
+      const product = await tx.product.findUnique({ where: { id: quote.productId } })
+      if (product.availableQty < agreedQty) {
+        throw new Error(`Insufficient stock: Only ${product.availableQty} ${product.unit} available`)
+      }
+
+      // Deduct available stock & increment reserved
+      await tx.product.update({
+        where: { id: quote.productId },
+        data: {
+          availableQty: { decrement: agreedQty },
+          reservedQty: { increment: agreedQty }
+        }
+      })
+
+      // Mark quote as ACCEPTED
+      const updatedQuote = await tx.quote.update({
+        where: { id },
+        data: {
+          status: 'ACCEPTED',
+          finalPrice: agreedPrice
+        }
+      })
+
+      // Generate Order
+      const orderNumber = 'ORD-' + Date.now().toString().slice(-6)
+      const deliveryAddress = quote.buyer.buyerProfile?.deliveryAddress || `${quote.buyer.buyerProfile?.city || 'Addis Ababa'}, Ethiopia`
+
+      const order = await tx.order.create({
+        data: {
+          orderNumber,
+          buyerId: quote.buyerId,
+          sellerId: quote.sellerId,
+          quoteId: quote.id,
+          subtotal,
+          deliveryFee,
+          totalAmount,
+          currency: quote.currency,
+          status: 'CONFIRMED',
