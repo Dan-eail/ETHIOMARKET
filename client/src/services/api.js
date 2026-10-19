@@ -83,3 +83,13 @@ export const api = {
     return apiRequest(`/orders${query ? `?${query}` : ''}`)
   },
   getOrderById: (id) => apiRequest(`/orders/${id}`),
+  getOrderInvoice: (id) => apiRequest(`/orders/${id}/invoice`),
+  repeatOrder: (id) => apiRequest(`/orders/${id}/repeat`, { method: 'POST' }),
+  updateOrderStatus: (id, status) => apiRequest(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+
+  // Deliveries
+  getAvailableDeliveries: () => apiRequest('/deliveries/available'),
+  getMyDeliveries: () => apiRequest('/deliveries/my-jobs'),
+  claimDelivery: (id, payload = {}) => apiRequest(`/deliveries/${id}/claim`, { method: 'POST', body: JSON.stringify(payload) }),
+  verifyPickup: (id, payload) => apiRequest(`/deliveries/${id}/verify-pickup`, { method: 'POST', body: JSON.stringify(payload) }),
+  verifyDelivery: (id, payload) => apiRequest(`/deliveries/${id}/verify-delivery`, { method: 'POST', body: JSON.stringify(payload) }),
