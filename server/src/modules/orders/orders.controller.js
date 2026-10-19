@@ -123,3 +123,68 @@ export const createDirectOrder = async (req, res, next) => {
     res.status(201).json({
       message: 'Order created successfully',
       order: result
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getOrders = async (req, res, next) => {
+  try {
+    const roleFilter = req.query.as === 'seller' ? { sellerId: req.user.id } :
+                       req.query.as === 'buyer' ? { buyerId: req.user.id } :
+                       { OR: [{ buyerId: req.user.id }, { sellerId: req.user.id }] }
+
+    const orders = await prisma.order.findMany({
+      where: roleFilter,
+      include: {
+        items: true,
+        buyer: { select: { id: true, name: true, phone: true } },
+        seller: { select: { id: true, name: true, phone: true } },
+        delivery: {
+          include: {
+            transporter: { select: { companyName: true, rating: true } },
+            events: { orderBy: { timestamp: 'desc' } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    res.json({ orders })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getOrderById = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: true,
+        buyer: { select: { id: true, name: true, phone: true, buyerProfile: true } },
+        seller: { select: { id: true, name: true, phone: true, farmerProfile: true } },
+        delivery: {
+          include: {
+            transporter: { include: { user: { select: { name: true, phone: true } } } },
+            vehicle: true,
+            events: { orderBy: { timestamp: 'asc' } }
+          }
+        },
+        review: true
+      }
+    })
+
+    if (!order) return res.status(404).json({ error: 'Order not found' })
+
+    if (order.buyerId !== req.user.id && order.sellerId !== req.user.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Not authorized to view this order' })
+    }
+
+    res.json({ order })
+  } catch (err) {
+    next(err)
+  }
