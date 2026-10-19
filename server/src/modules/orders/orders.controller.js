@@ -188,3 +188,63 @@ export const getOrderById = async (req, res, next) => {
   } catch (err) {
     next(err)
   }
+}
+
+export const updateOrderStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    const validStatuses = ['CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED']
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` })
+    }
+
+    const order = await prisma.order.findUnique({ where: { id } })
+    if (!order) return res.status(404).json({ error: 'Order not found' })
+
+    // Check authority: Seller, Admin, or Transporter
+    const isSeller = order.sellerId === req.user.id
+    const isAdmin = req.userRoles.includes('ADMIN')
+
+    if (!isSeller && !isAdmin) {
+      return res.status(403).json({ error: 'Only the producer or admin can update order processing status' })
+    }
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: { status, updatedAt: new Date() },
+      include: { items: true, buyer: true }
+    })
+
+    // If delivered, release reserved stock
+    if (status === 'DELIVERED') {
+      const items = await prisma.orderItem.findMany({ where: { orderId: id } })
+      for (const item of items) {
+        await prisma.product.update({
+          where: { id: item.productId },
+          data: { reservedQty: { decrement: item.quantity } }
+        }).catch(e => console.error(e))
+      }
+    }
+
+    res.json({ message: `Order marked as ${status}`, order: updated })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const repeatOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const original = await prisma.order.findUnique({
+      where: { id },
+      include: { items: { include: { product: true } } }
+    })
+
+    if (!original) return res.status(404).json({ error: 'Order not found' })
+    if (original.buyerId !== req.user.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'You can only repeat your own orders' })
+    }
+
+    if (!original.items || original.items.length === 0) {
