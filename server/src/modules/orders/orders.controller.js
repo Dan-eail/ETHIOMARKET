@@ -248,3 +248,63 @@ export const repeatOrder = async (req, res, next) => {
     }
 
     if (!original.items || original.items.length === 0) {
+      return res.status(400).json({ error: 'Original order has no items' })
+    }
+
+    const firstItem = original.items[0]
+    const product = await prisma.product.findUnique({ where: { id: firstItem.productId } })
+    if (!product) return res.status(404).json({ error: 'Original produce listing is no longer available' })
+
+    if (product.availableQty < firstItem.quantity) {
+      return res.status(400).json({
+        error: `Insufficient stock to repeat order. Requested: ${firstItem.quantity} ${product.unit}, Available: ${product.availableQty} ${product.unit}`
+      })
+    }
+
+    const subtotal = product.pricePerUnit * firstItem.quantity
+    const deliveryFee = original.deliveryFee || 2500
+    const totalAmount = subtotal + deliveryFee
+    const orderNumber = 'ORD-' + Date.now().toString().slice(-6)
+    const invoiceNumber = 'INV-' + orderNumber.replace('ORD-', '')
+
+    const newOrder = await prisma.$transaction(async (tx) => {
+      await tx.product.update({
+        where: { id: product.id },
+        data: {
+          availableQty: { decrement: firstItem.quantity },
+          reservedQty: { increment: firstItem.quantity }
+        }
+      })
+
+      const ord = await tx.order.create({
+        data: {
+          orderNumber,
+          invoiceNumber,
+          buyerId: req.user.id,
+          sellerId: product.sellerId,
+          subtotal,
+          deliveryFee,
+          totalAmount,
+          currency: product.currency,
+          status: 'CONFIRMED',
+          paymentStatus: 'CASH_ON_DELIVERY',
+          paymentMethod: 'CASH_ON_DELIVERY',
+          deliveryAddressSnapshot: original.deliveryAddressSnapshot,
+          notes: `Repeat of Order #${original.orderNumber}`,
+          items: {
+            create: [
+              {
+                productId: product.id,
+                productName: product.title,
+                productUnit: product.unit,
+                quantity: firstItem.quantity,
+                unitPrice: product.pricePerUnit,
+                totalPrice: subtotal
+              }
+            ]
+          }
+        },
+        include: { items: true }
+      })
+
+      const deliveryNumber = 'DEL-' + Date.now().toString().slice(-6)
