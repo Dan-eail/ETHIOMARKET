@@ -58,3 +58,23 @@ ETHIOMARKET/
 ```
 
 ---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+- Node.js (v18+ or v22+)
+- npm (v9+)
+
+### 2. Quick Setup & Start
+Run both the frontend and backend with pre-seeded data:
+
+```bash
+# 1. Install dependencies
+npm --prefix server install
+npm --prefix client install
+
+# 2. Setup database schema & seed Ethiopian agricultural data
+npm --prefix server run prisma:push
+npm --prefix server run prisma:seed
+
+# 3. Start Backend Server (runs on http://localhost:5000)
