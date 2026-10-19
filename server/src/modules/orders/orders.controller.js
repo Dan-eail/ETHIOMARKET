@@ -308,3 +308,63 @@ export const repeatOrder = async (req, res, next) => {
       })
 
       const deliveryNumber = 'DEL-' + Date.now().toString().slice(-6)
+      await tx.delivery.create({
+        data: {
+          deliveryNumber,
+          orderId: ord.id,
+          pickupRegion: product.region,
+          pickupCity: product.city,
+          pickupAddress: product.specificLocation || `${product.city} Agricultural Depot`,
+          dropoffRegion: 'Addis Ababa',
+          dropoffCity: 'Addis Ababa',
+          dropoffAddress: original.deliveryAddressSnapshot,
+          cargoWeightQuintals: product.unit === 'QUINTAL' ? firstItem.quantity : (firstItem.quantity / 100),
+          deliveryFee,
+          status: 'REQUESTED',
+          recipientName: req.user.name,
+          recipientPhone: req.user.phone
+        }
+      })
+
+      return ord
+    })
+
+    res.status(201).json({ message: 'Order repeated successfully', order: newOrder })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getOrderInvoice = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: true,
+        buyer: { select: { id: true, name: true, email: true, phone: true, buyerProfile: true } },
+        seller: { select: { id: true, name: true, email: true, phone: true, farmerProfile: true } },
+        delivery: true
+      }
+    })
+
+    if (!order) return res.status(404).json({ error: 'Order not found' })
+
+    if (order.buyerId !== req.user.id && order.sellerId !== req.user.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Not authorized to view invoice for this order' })
+    }
+
+    const vatRate = 0.15 // Ethiopian standard VAT rate 15%
+    const vatAmount = Math.round(order.subtotal * vatRate * 100) / 100
+    const grandTotal = Math.round((order.totalAmount + vatAmount) * 100) / 100
+
+    const invoice = {
+      invoiceNumber: order.invoiceNumber || ('INV-' + order.orderNumber.replace('ORD-', '')),
+      orderNumber: order.orderNumber,
+      issueDate: order.createdAt,
+      currency: order.currency,
+      paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      buyer: {
+        name: order.buyer.name,
+        company: order.buyer.buyerProfile?.businessName || order.buyer.name,
