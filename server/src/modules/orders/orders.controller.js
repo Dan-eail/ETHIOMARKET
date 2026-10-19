@@ -63,3 +63,63 @@ export const createDirectOrder = async (req, res, next) => {
           totalAmount,
           currency: product.currency,
           status: 'CONFIRMED',
+          paymentStatus: validated.paymentMethod === 'CASH_ON_DELIVERY' ? 'CASH_ON_DELIVERY' : 'PENDING',
+          paymentMethod: validated.paymentMethod,
+          isPaid: false,
+          deliveryAddressSnapshot: validated.deliveryAddress,
+          notes: validated.notes,
+          items: {
+            create: [
+              {
+                productId: product.id,
+                productName: product.title,
+                productUnit: product.unit,
+                quantity: validated.quantity,
+                unitPrice: product.pricePerUnit,
+                totalPrice: subtotal
+              }
+            ]
+          }
+        },
+        include: {
+          items: true
+        }
+      })
+
+      // Delivery job created for transporters to claim
+      const deliveryNumber = 'DEL-' + Date.now().toString().slice(-6)
+      await tx.delivery.create({
+        data: {
+          deliveryNumber,
+          orderId: order.id,
+          pickupRegion: product.region,
+          pickupCity: product.city,
+          pickupAddress: product.specificLocation || `${product.city} Agricultural Depot`,
+          dropoffRegion: req.user.buyerProfile?.region || 'Addis Ababa',
+          dropoffCity: req.user.buyerProfile?.city || 'Addis Ababa',
+          dropoffAddress: validated.deliveryAddress,
+          cargoWeightQuintals: product.unit === 'QUINTAL' ? validated.quantity : (validated.quantity / 100),
+          deliveryFee,
+          status: 'REQUESTED',
+          recipientName: req.user.name,
+          recipientPhone: req.user.phone,
+        }
+      })
+
+      // Notify seller
+      await tx.notification.create({
+        data: {
+          userId: product.sellerId,
+          title: 'New Confirmed Order! 📦',
+          message: `${req.user.name} placed order #${orderNumber} for ${validated.quantity} ${product.unit} of ${product.title}`,
+          type: 'ORDER',
+          linkUrl: '/dashboard/farmer/orders'
+        }
+      })
+
+      return order
+    })
+
+    res.status(201).json({
+      message: 'Order created successfully',
+      order: result
