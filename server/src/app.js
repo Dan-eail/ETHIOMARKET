@@ -63,3 +63,7 @@ app.use('/api/v1/market-prices', marketPricesRoutes)
 app.use('/api/v1/favorites', favoritesRoutes)
 app.use('/api/v1/kyc', kycRoutes)
 app.use('/api/v1/payments', paymentsRoutes)
+
+// Error Handlers
+app.use(notFound)
+app.use(errorHandler)
