@@ -218,3 +218,42 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
     // Find delivery corresponding to our order
     const delivery = availData.deliveries.find(d => d.orderId === orderId) || availData.deliveries[0]
     assert.ok(delivery)
+
+    // Claim delivery
+    const resClaim = await fetch(`${BASE_URL}/deliveries/${delivery.id}/claim`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${transporterToken}`
+      },
+      body: JSON.stringify({})
+    })
+    const claimData = await resClaim.json()
+    assert.strictEqual(resClaim.status, 200)
+    assert.strictEqual(claimData.delivery.status, 'ASSIGNED')
+    assert.ok(claimData.delivery.pickupVerificationCode)
+    assert.ok(claimData.delivery.deliveryVerificationCode)
+
+    // Test Pickup Verification (failure on wrong code, success on right code)
+    const resWrongPickup = await fetch(`${BASE_URL}/deliveries/${delivery.id}/verify-pickup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${transporterToken}`
+      },
+      body: JSON.stringify({ code: '000000' })
+    })
+    assert.strictEqual(resWrongPickup.status, 400)
+
+    const resCorrectPickup = await fetch(`${BASE_URL}/deliveries/${delivery.id}/verify-pickup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${transporterToken}`
+      },
+      body: JSON.stringify({ code: claimData.delivery.pickupVerificationCode })
+    })
+    const pickupData = await resCorrectPickup.json()
+    assert.strictEqual(resCorrectPickup.status, 200)
+    assert.strictEqual(pickupData.delivery.status, 'PICKED_UP')
+    assert.strictEqual(pickupData.delivery.isPickupVerified, true)
