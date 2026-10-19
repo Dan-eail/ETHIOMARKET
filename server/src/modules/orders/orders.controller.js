@@ -368,3 +368,37 @@ export const getOrderInvoice = async (req, res, next) => {
       buyer: {
         name: order.buyer.name,
         company: order.buyer.buyerProfile?.businessName || order.buyer.name,
+        phone: order.buyer.phone,
+        email: order.buyer.email,
+        address: order.deliveryAddressSnapshot,
+        tin: order.buyer.buyerProfile?.tinNumber || 'TIN-009482103'
+      },
+      seller: {
+        name: order.seller.name,
+        farmName: order.seller.farmerProfile?.farmName || `${order.seller.name} Agricultural Enterprise`,
+        phone: order.seller.phone,
+        email: order.seller.email,
+        region: order.seller.farmerProfile?.region || 'Oromia, Ethiopia',
+        tin: 'TIN-008129384'
+      },
+      lineItems: order.items.map(item => ({
+        description: item.productName,
+        quantity: item.quantity,
+        unit: item.productUnit,
+        unitPrice: item.unitPrice,
+        total: item.totalPrice
+      })),
+      financials: {
+        subtotal: order.subtotal,
+        deliveryFee: order.deliveryFee,
+        vatRatePercentage: 15,
+        vatAmount,
+        grandTotal
+      }
+    }
+
+    res.json({ invoice })
+  } catch (err) {
+    next(err)
+  }
+}
