@@ -213,3 +213,58 @@ model Order {
   id                     String      @id @default(cuid())
   orderNumber            String      @unique
   buyerId                String
+  sellerId               String
+  quoteId                String?
+  invoiceNumber          String?
+  totalAmount            Float       // In ETB
+  subtotal               Float
+  deliveryFee            Float       @default(0)
+  currency               String      @default("ETB")
+  status                 String      @default("CONFIRMED") // PENDING_PAYMENT, CONFIRMED, PROCESSING, READY_FOR_PICKUP, IN_TRANSIT, DELIVERED, CANCELLED, DISPUTED
+  paymentStatus          String      @default("CASH_ON_DELIVERY") // PENDING, PAID, CASH_ON_DELIVERY, REFUNDED
+  paymentMethod          String      @default("CASH_ON_DELIVERY") // CASH_ON_DELIVERY, TELEBIRR, CBE_BIRR, BANK_TRANSFER
+  paymentReference       String?
+  isPaid                 Boolean     @default(false)
+  deliveryAddressSnapshot String
+  notes                  String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  buyer                  User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  seller                 User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  quote                  Quote?      @relation(fields: [quoteId], references: [id])
+  items                  OrderItem[]
+  delivery               Delivery?
+  review                 Review?
+  disputes               Dispute[]
+  payments               Payment[]
+  refunds                RefundRecord[]
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  productUnit String
+  quantity    Float
+  unitPrice   Float
+  totalPrice  Float
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model Delivery {
+  id                      String              @id @default(cuid())
+  deliveryNumber          String              @unique
+  orderId                 String              @unique
+  transporterId           String?
+  vehicleId               String?
+  pickupRegion            String
+  pickupCity              String
+  pickupAddress           String
+  dropoffRegion           String
+  dropoffCity             String
+  dropoffAddress          String
+  cargoWeightQuintals     Float               @default(10)
