@@ -298,3 +298,33 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
 
   await t.test('9. RBAC Security: Buyer cannot access Admin endpoints', async () => {
     const res = await fetch(`${BASE_URL}/admin/stats`, {
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
+    assert.strictEqual(res.status, 403)
+  })
+
+  await t.test('10. Farmer Stock Update & Low Stock Warnings', async () => {
+    const resStock = await fetch(`${BASE_URL}/products/${createdProductId}/stock`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${farmerToken}`
+      },
+      body: JSON.stringify({ availableQty: 15, lowStockThreshold: 10 })
+    })
+    const stockData = await resStock.json()
+    assert.strictEqual(resStock.status, 200)
+    assert.strictEqual(stockData.product.availableQty, 15)
+    assert.strictEqual(stockData.product.lowStockThreshold, 10)
+  })
+
+  await t.test('11. Supplier Matching Algorithm', async () => {
+    const resMatch = await fetch(`${BASE_URL}/products/match-suppliers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${buyerToken}`
+      },
+      body: JSON.stringify({
+        cropQuery: 'Garlic',
+        requestedQty: 5,
