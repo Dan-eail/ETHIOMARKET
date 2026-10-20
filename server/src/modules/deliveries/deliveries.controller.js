@@ -297,3 +297,64 @@ export const reportDelay = async (req, res, next) => {
         }
       })
     ])
+
+    res.json({ message: 'Transit notice logged successfully', delivery: updatedDelivery, event: newEvent })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const addDeliveryEvent = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { status, description, location } = req.body
+
+    const transporter = await prisma.transporterProfile.findUnique({
+      where: { userId: req.user.id }
+    })
+
+    const delivery = await prisma.delivery.findUnique({ where: { id } })
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' })
+
+    if (delivery.transporterId !== transporter?.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Not authorized to update this delivery' })
+    }
+
+    const [updatedDelivery, newEvent] = await prisma.$transaction([
+      prisma.delivery.update({
+        where: { id },
+        data: { status, updatedAt: new Date() }
+      }),
+      prisma.deliveryEvent.create({
+        data: {
+          deliveryId: id,
+          status,
+          description: description || `Status updated to ${status}`,
+          location: location || delivery.pickupCity
+        }
+      }),
+      ...(status === 'DELIVERED' ? [
+        prisma.order.update({
+          where: { id: delivery.orderId },
+          data: { status: 'DELIVERED', paymentStatus: 'PAID', isPaid: true }
+        })
+      ] : status === 'PICKED_UP' ? [
+        prisma.order.update({
+          where: { id: delivery.orderId },
+          data: { status: 'IN_TRANSIT' }
+        })
+      ] : [])
+    ])
+
+    res.json({ message: `Delivery updated to ${status}`, delivery: updatedDelivery, event: newEvent })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const registerVehicle = async (req, res, next) => {
+  try {
+    const { plateNumber, vehicleType, capacityTons, modelYear } = req.body
+    const transporter = await prisma.transporterProfile.findUnique({
+      where: { userId: req.user.id }
+    })
