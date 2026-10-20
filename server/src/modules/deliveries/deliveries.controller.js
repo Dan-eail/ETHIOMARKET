@@ -358,3 +358,24 @@ export const registerVehicle = async (req, res, next) => {
     const transporter = await prisma.transporterProfile.findUnique({
       where: { userId: req.user.id }
     })
+
+    if (!transporter) {
+      return res.status(403).json({ error: 'Transporter profile required' })
+    }
+
+    const vehicle = await prisma.vehicle.create({
+      data: {
+        transporterId: transporter.id,
+        plateNumber,
+        vehicleType,
+        capacityTons: parseFloat(capacityTons),
+        modelYear: modelYear ? parseInt(modelYear) : undefined,
+        verified: true,
+      }
+    })
+
+    res.status(201).json({ message: 'Vehicle registered successfully', vehicle })
+  } catch (err) {
+    next(err)
+  }
+}
