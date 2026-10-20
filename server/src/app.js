@@ -67,3 +67,5 @@ app.use('/api/v1/payments', paymentsRoutes)
 // Error Handlers
 app.use(notFound)
 app.use(errorHandler)
+
+export default app
