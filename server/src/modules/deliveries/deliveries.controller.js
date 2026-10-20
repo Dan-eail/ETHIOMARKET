@@ -118,3 +118,63 @@ export const claimDelivery = async (req, res, next) => {
 
 export const verifyPickup = async (req, res, next) => {
   try {
+    const { id } = req.params
+    const { code } = req.body
+
+    const transporter = await prisma.transporterProfile.findUnique({
+      where: { userId: req.user.id }
+    })
+
+    const delivery = await prisma.delivery.findUnique({
+      where: { id },
+      include: { order: true }
+    })
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' })
+
+    if (delivery.transporterId !== transporter?.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Only the assigned transporter can verify pickup' })
+    }
+
+    if (!code || delivery.pickupVerificationCode !== code.trim()) {
+      return res.status(400).json({ error: 'Invalid pickup verification code. Obtain the 6-digit code from the farmer at pickup.' })
+    }
+
+    const [updatedDelivery, newEvent] = await prisma.$transaction([
+      prisma.delivery.update({
+        where: { id },
+        data: {
+          isPickupVerified: true,
+          status: 'PICKED_UP',
+          updatedAt: new Date()
+        }
+      }),
+      prisma.deliveryEvent.create({
+        data: {
+          deliveryId: id,
+          status: 'PICKED_UP',
+          description: 'Farm pickup authenticated via secure verification code. Cargo loaded and verified.',
+          location: delivery.pickupCity
+        }
+      }),
+      prisma.order.update({
+        where: { id: delivery.orderId },
+        data: { status: 'IN_TRANSIT' }
+      }),
+      prisma.notification.create({
+        data: {
+          userId: delivery.order.buyerId,
+          title: 'Produce In Transit! 🚛',
+          message: `Your order #${delivery.order.orderNumber} has been picked up from the farm and is on the way.`,
+          type: 'DELIVERY',
+          linkUrl: '/dashboard/buyer'
+        }
+      })
+    ])
+
+    res.json({ message: 'Farm pickup verified successfully! Cargo is now in transit.', delivery: updatedDelivery, event: newEvent })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const verifyDelivery = async (req, res, next) => {
