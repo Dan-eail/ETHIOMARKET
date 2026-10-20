@@ -257,3 +257,44 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
     assert.strictEqual(resCorrectPickup.status, 200)
     assert.strictEqual(pickupData.delivery.status, 'PICKED_UP')
     assert.strictEqual(pickupData.delivery.isPickupVerified, true)
+
+    // Transporter reports a transit delay
+    const resDelay = await fetch(`${BASE_URL}/deliveries/${delivery.id}/report-delay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${transporterToken}`
+      },
+      body: JSON.stringify({ reason: 'Modjo checkpoint heavy weigh-scale traffic', location: 'Modjo Toll Plaza' })
+    })
+    const delayData = await resDelay.json()
+    assert.strictEqual(resDelay.status, 200)
+    assert.ok(delayData.delivery.reportedDelayReason.includes('Modjo'))
+
+    // Customer delivery verification
+    const resCorrectDelivery = await fetch(`${BASE_URL}/deliveries/${delivery.id}/verify-delivery`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${transporterToken}`
+      },
+      body: JSON.stringify({ code: claimData.delivery.deliveryVerificationCode })
+    })
+    const deliveryFinalData = await resCorrectDelivery.json()
+    assert.strictEqual(resCorrectDelivery.status, 200)
+    assert.strictEqual(deliveryFinalData.delivery.status, 'DELIVERED')
+    assert.strictEqual(deliveryFinalData.delivery.isDeliveryVerified, true)
+  })
+
+  await t.test('8. Admin views platform stats and audit logs', async () => {
+    const res = await fetch(`${BASE_URL}/admin/stats`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    })
+    const data = await res.json()
+    assert.strictEqual(res.status, 200)
+    assert.ok(data.stats.usersCount >= 4)
+    assert.ok(data.stats.ordersCount >= 1)
+  })
+
+  await t.test('9. RBAC Security: Buyer cannot access Admin endpoints', async () => {
+    const res = await fetch(`${BASE_URL}/admin/stats`, {
