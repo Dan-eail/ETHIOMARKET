@@ -93,3 +93,13 @@ export const api = {
   claimDelivery: (id, payload = {}) => apiRequest(`/deliveries/${id}/claim`, { method: 'POST', body: JSON.stringify(payload) }),
   verifyPickup: (id, payload) => apiRequest(`/deliveries/${id}/verify-pickup`, { method: 'POST', body: JSON.stringify(payload) }),
   verifyDelivery: (id, payload) => apiRequest(`/deliveries/${id}/verify-delivery`, { method: 'POST', body: JSON.stringify(payload) }),
+  reportDelay: (id, payload) => apiRequest(`/deliveries/${id}/report-delay`, { method: 'POST', body: JSON.stringify(payload) }),
+  addDeliveryEvent: (id, payload) => apiRequest(`/deliveries/${id}/events`, { method: 'POST', body: JSON.stringify(payload) }),
+  registerVehicle: (payload) => apiRequest('/deliveries/vehicles', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Admin
+  getAdminStats: () => apiRequest('/admin/stats'),
+  getAllUsers: () => apiRequest('/admin/users'),
+  verifyUser: (id, isVerified) => apiRequest(`/admin/users/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ isVerified }) }),
+  updateUserStatus: (id, status) => apiRequest(`/admin/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getAuditLogs: () => apiRequest('/admin/audit-logs'),
