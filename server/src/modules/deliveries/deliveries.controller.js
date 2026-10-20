@@ -178,3 +178,63 @@ export const verifyPickup = async (req, res, next) => {
 }
 
 export const verifyDelivery = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { code, proofOfDeliveryUrl } = req.body
+
+    const transporter = await prisma.transporterProfile.findUnique({
+      where: { userId: req.user.id }
+    })
+
+    const delivery = await prisma.delivery.findUnique({
+      where: { id },
+      include: { order: true }
+    })
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' })
+
+    if (delivery.transporterId !== transporter?.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Only the assigned transporter can verify customer delivery' })
+    }
+
+    if (!code || delivery.deliveryVerificationCode !== code.trim()) {
+      return res.status(400).json({ error: 'Invalid delivery code. Obtain the 6-digit code from the buyer upon handover.' })
+    }
+
+    const [updatedDelivery, newEvent] = await prisma.$transaction([
+      prisma.delivery.update({
+        where: { id },
+        data: {
+          isDeliveryVerified: true,
+          status: 'DELIVERED',
+          proofOfDeliveryUrl: proofOfDeliveryUrl || null,
+          updatedAt: new Date()
+        }
+      }),
+      prisma.deliveryEvent.create({
+        data: {
+          deliveryId: id,
+          status: 'DELIVERED',
+          description: 'Cargo handed over to buyer. Final delivery confirmed via secure handover code.',
+          location: delivery.dropoffCity
+        }
+      }),
+      prisma.order.update({
+        where: { id: delivery.orderId },
+        data: {
+          status: 'DELIVERED',
+          paymentStatus: 'PAID',
+          isPaid: true
+        }
+      }),
+      prisma.notification.create({
+        data: {
+          userId: delivery.order.sellerId,
+          title: 'Delivery Completed! 💰',
+          message: `Order #${delivery.order.orderNumber} has been safely delivered and confirmed by buyer.`,
+          type: 'DELIVERY',
+          linkUrl: '/dashboard/farmer/orders'
+        }
+      }),
+      prisma.notification.create({
+        data: {
+          userId: delivery.order.buyerId,
