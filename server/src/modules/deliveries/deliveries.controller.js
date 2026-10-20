@@ -238,3 +238,62 @@ export const verifyDelivery = async (req, res, next) => {
       prisma.notification.create({
         data: {
           userId: delivery.order.buyerId,
+          title: 'Order Delivered! 📦',
+          message: `Order #${delivery.order.orderNumber} delivered successfully. Thank you for trading on EthioMarket!`,
+          type: 'DELIVERY',
+          linkUrl: '/dashboard/buyer'
+        }
+      })
+    ])
+
+    res.json({ message: 'Delivery completed and verified! Order fulfilled.', delivery: updatedDelivery, event: newEvent })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const reportDelay = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { reason, location } = req.body
+
+    const transporter = await prisma.transporterProfile.findUnique({
+      where: { userId: req.user.id }
+    })
+
+    const delivery = await prisma.delivery.findUnique({
+      where: { id },
+      include: { order: true }
+    })
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' })
+
+    if (delivery.transporterId !== transporter?.id && !req.userRoles.includes('ADMIN')) {
+      return res.status(403).json({ error: 'Not authorized to report delay on this delivery' })
+    }
+
+    const [updatedDelivery, newEvent] = await prisma.$transaction([
+      prisma.delivery.update({
+        where: { id },
+        data: {
+          reportedDelayReason: reason,
+          updatedAt: new Date()
+        }
+      }),
+      prisma.deliveryEvent.create({
+        data: {
+          deliveryId: id,
+          status: delivery.status,
+          description: `Transit notice / delay reported: ${reason}`,
+          location: location || delivery.dropoffCity
+        }
+      }),
+      prisma.notification.create({
+        data: {
+          userId: delivery.order.buyerId,
+          title: 'Transit Update on Your Order ⚠️',
+          message: `Transporter reported a transit notice: ${reason}`,
+          type: 'DELIVERY',
+          linkUrl: '/dashboard/buyer'
+        }
+      })
+    ])
