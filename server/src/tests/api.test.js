@@ -328,3 +328,23 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
       body: JSON.stringify({
         cropQuery: 'Garlic',
         requestedQty: 5,
+        region: 'Oromia',
+        isOrganic: true
+      })
+    })
+    const matchData = await resMatch.json()
+    assert.strictEqual(resMatch.status, 200)
+    assert.ok(matchData.matches.length >= 1)
+    assert.ok(matchData.matches[0].matchScore >= 70)
+    assert.ok(matchData.matches[0].matchReasons.length > 0)
+  })
+
+  await t.test('12. Buyer Invoice Generation & Repeat Order', async () => {
+    // Invoice
+    const resInv = await fetch(`${BASE_URL}/orders/${orderId}/invoice`, {
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
+    const invData = await resInv.json()
+    assert.strictEqual(resInv.status, 200)
+    assert.ok(invData.invoice.invoiceNumber)
+    assert.strictEqual(invData.invoice.financials.vatRatePercentage, 15)
