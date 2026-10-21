@@ -103,3 +103,13 @@ export const api = {
   verifyUser: (id, isVerified) => apiRequest(`/admin/users/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ isVerified }) }),
   updateUserStatus: (id, status) => apiRequest(`/admin/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   getAuditLogs: () => apiRequest('/admin/audit-logs'),
+
+  // Notifications
+  getNotifications: () => apiRequest('/notifications'),
+  markNotificationRead: (id) => apiRequest(`/notifications/${id}/read`, { method: 'PATCH' }),
+  markAllNotificationsRead: () => apiRequest('/notifications/read-all', { method: 'POST' }),
+
+  // Conversations
+  getConversations: () => apiRequest('/conversations'),
+  getMessages: (id) => apiRequest(`/conversations/${id}`),
+  sendMessage: (id, text) => apiRequest(`/conversations/${id}/messages`, { method: 'POST', body: JSON.stringify({ text }) }),
