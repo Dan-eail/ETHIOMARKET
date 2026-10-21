@@ -268,3 +268,53 @@ model Delivery {
   dropoffCity             String
   dropoffAddress          String
   cargoWeightQuintals     Float               @default(10)
+  distanceKm              Float?
+  deliveryFee             Float               @default(0)
+  estimatedPickupDate     DateTime?
+  estimatedDeliveryDate    DateTime?
+  pickupVerificationCode  String?             // 6-digit secure code generated for farm pickup
+  deliveryVerificationCode String?            // 6-digit secure code generated for customer delivery
+  isPickupVerified        Boolean             @default(false)
+  isDeliveryVerified      Boolean             @default(false)
+  cargoSealNumber         String?
+  reportedDelayReason     String?
+  status                  String              @default("REQUESTED") // REQUESTED, QUOTED, ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED, CANCELLED
+  proofOfDeliveryUrl      String?
+  recipientName           String
+  recipientPhone          String
+  notes                   String?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  order                Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transporter          TransporterProfile? @relation(fields: [transporterId], references: [id])
+  vehicle              Vehicle?            @relation(fields: [vehicleId], references: [id])
+  events               DeliveryEvent[]
+}
+
+model DeliveryEvent {
+  id          String   @id @default(cuid())
+  deliveryId  String
+  status      String
+  description String
+  location    String?
+  timestamp   DateTime @default(now())
+
+  delivery    Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  participant1Id String
+  participant2Id String
+  topic         String?
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  messages      Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
