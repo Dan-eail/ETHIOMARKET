@@ -108,3 +108,66 @@ export const verifyUser = async (req, res, next) => {
     })
 
     // Also update farmer/transporter badge if applicable
+    await prisma.farmerProfile.updateMany({
+      where: { userId: id },
+      data: { verifiedBadge: Boolean(isVerified) }
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user.id,
+        userRole: 'ADMIN',
+        action: isVerified ? 'USER_VERIFIED' : 'USER_UNVERIFIED',
+        entityType: 'USER',
+        entityId: id,
+        details: `Verification state updated to ${isVerified} by Admin ${req.user.name}`
+      }
+    })
+
+    res.json({ message: 'User verification status updated', user })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const updateUserStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body // ACTIVE, SUSPENDED
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { status }
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user.id,
+        userRole: 'ADMIN',
+        action: `USER_${status}`,
+        entityType: 'USER',
+        entityId: id,
+        details: `Account status changed to ${status} by Admin ${req.user.name}`
+      }
+    })
+
+    res.json({ message: `User status changed to ${status}`, user })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getAuditLogs = async (req, res, next) => {
+  try {
+    const logs = await prisma.auditLog.findMany({
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { name: true, email: true } }
+      }
+    })
+    res.json({ logs })
+  } catch (err) {
+    next(err)
+  }
+}
