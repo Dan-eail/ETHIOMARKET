@@ -58,3 +58,53 @@ export const getPlatformStats = async (req, res, next) => {
         transportersCount,
         productsCount,
         ordersCount,
+        totalGMV,
+        pendingReviewsCount: pendingKycReviewsCount,
+        paymentsCount,
+        totalVerifiedPayments
+      },
+      recentOrders,
+      categoryVolume
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        roles: true,
+        farmerProfile: true,
+        buyerProfile: true,
+        transporterProfile: true,
+        verificationRecords: {
+          take: 1,
+          orderBy: { createdAt: 'desc' }
+        },
+        _count: {
+          select: { productsSelling: true, ordersBought: true, ordersSold: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    const safeUsers = users.map(({ passwordHash, ...u }) => u)
+    res.json({ users: safeUsers })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const verifyUser = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { isVerified } = req.body
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { isVerified: Boolean(isVerified) }
+    })
+
+    // Also update farmer/transporter badge if applicable
