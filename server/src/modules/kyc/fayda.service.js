@@ -67,3 +67,74 @@ export class FaydaService {
         userNotes: 'Initiated Fayda OIDC authorization session'
       }
     })
+
+    if (!this.isConfigured()) {
+      return {
+        configured: false,
+        attemptId: attempt.id,
+        state,
+        message: 'Fayda partner credentials (FAYDA_CLIENT_ID / FAYDA_CLIENT_SECRET) are unconfigured. To test in local sandbox mode, use the test callback endpoint or submit for manual review.',
+        authUrl: null
+      }
+    }
+
+    const authUrl = new URL(config.fayda.authUrl)
+    authUrl.searchParams.set('client_id', config.fayda.clientId)
+    authUrl.searchParams.set('redirect_uri', config.fayda.redirectUri)
+    authUrl.searchParams.set('response_type', 'code')
+    authUrl.searchParams.set('scope', 'openid profile fayda_id')
+    authUrl.searchParams.set('state', state)
+    authUrl.searchParams.set('nonce', nonce)
+    authUrl.searchParams.set('code_challenge', codeChallenge)
+    authUrl.searchParams.set('code_challenge_method', 'S256')
+
+    return {
+      configured: true,
+      attemptId: attempt.id,
+      state,
+      authUrl: authUrl.toString()
+    }
+  }
+
+  /**
+   * Handle Fayda OAuth2 Callback
+   */
+  static async handleCallback({ code, state, requestingUserId, mockClaims = null }) {
+    const session = pendingOidcStates.get(state)
+    if (!session) {
+      throw new Error('Invalid or expired verification session state. Please restart Fayda verification.')
+    }
+
+    // Verify session belongs to the requesting user to prevent cross-account linking
+    if (session.userId !== requestingUserId) {
+      throw new Error('Security violation: Callback session state mismatch. Identity cannot be bound to another user account.')
+    }
+
+    pendingOidcStates.delete(state)
+
+    let verifiedClaims = {}
+    let providerRef = ''
+
+    if (mockClaims) {
+      // Used in validated test environments and sandbox runs
+      verifiedClaims = mockClaims
+      providerRef = `FAYDA-TEST-${Date.now()}`
+    } else {
+      if (!this.isConfigured()) {
+        throw new Error('Fayda partner integration is unconfigured on this environment. Cannot process live code exchange.')
+      }
+
+      // Exchange code for tokens at Fayda Token Endpoint
+      const tokenRes = await fetch(config.fayda.tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${config.fayda.clientId}:${config.fayda.clientSecret}`).toString('base64')}`
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: config.fayda.redirectUri,
+          code_verifier: session.codeVerifier
+        })
+      })
