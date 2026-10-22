@@ -23,3 +23,10 @@ export const config = {
   chapa: {
     baseUrl: process.env.CHAPA_API_BASE_URL || 'https://api.chapa.co/v1',
     secretKey: process.env.CHAPA_SECRET_KEY || '',
+    webhookSecret: process.env.CHAPA_WEBHOOK_SECRET || '',
+    webhookUrl: process.env.CHAPA_WEBHOOK_URL || 'http://localhost:5000/api/v1/payments/webhook',
+    returnUrl: process.env.CHAPA_RETURN_URL || 'http://localhost:5173/checkout/verify',
+    environment: process.env.PAYMENT_ENVIRONMENT || 'test',
+    isConfigured: () => Boolean(process.env.CHAPA_SECRET_KEY && process.env.CHAPA_SECRET_KEY.startsWith('CHASECK_'))
+  }
+}
