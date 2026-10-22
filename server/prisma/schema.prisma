@@ -318,3 +318,52 @@ model Message {
   id             String       @id @default(cuid())
   conversationId String
   senderId       String
+  text           String
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  orderId      String   @unique
+  reviewerId   String
+  targetUserId String
+  rating       Int      // 1 to 5
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewer     User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  targetUser   User     @relation("ReviewedUser", fields: [targetUserId], references: [id])
+}
+
+model Dispute {
+  id               String    @id @default(cuid())
+  disputeNumber    String    @unique
+  orderId          String
+  initiatorId      String
+  respondentId     String
+  reason           String    // QUALITY_ISSUE, NON_DELIVERY, QUANTITY_SHORTAGE, PAYMENT_DISPUTE
+  description      String
+  status           String    @default("OPEN") // OPEN, UNDER_INVESTIGATION, RESOLVED, DISMISSED
+  resolution       String?
+  resolvedByAdminId String?
+  resolvedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  userRole   String?
+  action     String   // USER_VERIFIED, PRODUCT_APPROVED, DISPUTE_RESOLVED, ORDER_CANCELLED
+  entityType String   // USER, PRODUCT, ORDER, DISPUTE
+  entityId   String
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
