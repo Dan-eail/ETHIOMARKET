@@ -138,3 +138,150 @@ test('EthioMarket KYC & Identity Verification Tests', async (t) => {
     assert.ok(consentData.state)
     assert.ok(consentData.attemptId)
     oidcState = consentData.state
+  })
+
+  await t.test('3. Fayda Callback rejects invalid or expired state', async () => {
+    const res = await fetch(`${BASE_URL}/kyc/fayda/callback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${unverifiedFarmerToken}`
+      },
+      body: JSON.stringify({
+        state: 'invalid-non-existent-state-12345',
+        code: 'some_code'
+      })
+    })
+    assert.strictEqual(res.status, 400)
+  })
+
+  await t.test('4. Security: Cross-account state linking is rejected', async () => {
+    // Attempting to redeem unverifiedFarmer's state with admin token
+    const res = await fetch(`${BASE_URL}/kyc/fayda/callback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        state: oidcState,
+        code: 'code123'
+      })
+    })
+    const data = await res.json()
+    assert.strictEqual(res.status, 400)
+    assert.match(data.error, /mismatch/i)
+  })
+
+  await t.test('5. Valid Fayda Callback marks account as VERIFIED with FAYDA method', async () => {
+    const res = await fetch(`${BASE_URL}/kyc/fayda/callback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${unverifiedFarmerToken}`
+      },
+      body: JSON.stringify({
+        state: oidcState,
+        code: 'VALID_AUTH_CODE_2026',
+        mockClaims: {
+          fullName: 'Chala Gemechu',
+          gender: 'MALE',
+          dateOfBirth: '1990-04-18',
+          faydaId: 'FIN-109283746520'
+        }
+      })
+    })
+
+    const data = await res.json()
+    assert.strictEqual(res.status, 200)
+    assert.strictEqual(data.success, true)
+    assert.strictEqual(data.method, 'FAYDA')
+    assert.strictEqual(data.status, 'VERIFIED')
+
+    // Verify DB user is now verified
+    const userInDb = await prisma.user.findUnique({ where: { id: unverifiedFarmer.id } })
+    assert.strictEqual(userInDb.isVerified, true)
+  })
+
+  let manualRecordId = ''
+  await t.test('6. Manual Review Fallback submission and duplicate prevention', async () => {
+    // Reset user to unverified for testing manual fallback
+    await prisma.user.update({
+      where: { id: unverifiedFarmer.id },
+      data: { isVerified: false }
+    })
+    await prisma.verificationRecord.deleteMany({
+      where: { userId: unverifiedFarmer.id }
+    })
+
+    const resSubmit = await fetch(`${BASE_URL}/kyc/manual/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${unverifiedFarmerToken}`
+      },
+      body: JSON.stringify({
+        documentType: 'KEBELE_ID',
+        documentNumber: 'KB-882910',
+        userNotes: 'TEST_KYC submission from highland cooperative',
+        consentGiven: true
+      })
+    })
+
+    const submitData = await resSubmit.json()
+    assert.strictEqual(resSubmit.status, 201)
+    assert.strictEqual(submitData.record.method, 'MANUAL_REVIEW')
+    assert.strictEqual(submitData.record.status, 'PENDING_REVIEW')
+    manualRecordId = submitData.record.id
+
+    // Attempting duplicate submission should be rejected
+    const resDuplicate = await fetch(`${BASE_URL}/kyc/manual/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${unverifiedFarmerToken}`
+      },
+      body: JSON.stringify({
+        documentType: 'PASSPORT',
+        documentNumber: 'EP123456',
+        consentGiven: true
+      })
+    })
+    assert.strictEqual(resDuplicate.status, 400)
+    const dupData = await resDuplicate.json()
+    assert.match(dupData.error, /pending verification review/i)
+  })
+
+  await t.test('7. Admin Review: Approval requires mandatory reason and sets method to MANUAL_REVIEW', async () => {
+    // Approve without reason should fail
+    const resNoReason = await fetch(`${BASE_URL}/kyc/manual/${manualRecordId}/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ decisionReason: 'ok' }) // Less than 5 chars
+    })
+    assert.strictEqual(resNoReason.status, 400)
+
+    // Approve with proper reason
+    const resApprove = await fetch(`${BASE_URL}/kyc/manual/${manualRecordId}/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        decisionReason: 'Kebele identification verified against regional cooperative agricultural registry.'
+      })
+    })
+    const approveData = await resApprove.json()
+    assert.strictEqual(resApprove.status, 200)
+    assert.strictEqual(approveData.record.status, 'VERIFIED')
+    assert.strictEqual(approveData.record.method, 'MANUAL_REVIEW') // Critical: never falsely reported as FAYDA
+
+    // Check user is now verified
+    const userInDb = await prisma.user.findUnique({ where: { id: unverifiedFarmer.id } })
+    assert.strictEqual(userInDb.isVerified, true)
+  })
+})
