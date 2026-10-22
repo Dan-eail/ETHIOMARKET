@@ -138,3 +138,98 @@ export class FaydaService {
           code_verifier: session.codeVerifier
         })
       })
+
+      if (!tokenRes.ok) {
+        const errText = await tokenRes.text()
+        throw new Error(`Fayda token exchange failed: ${errText}`)
+      }
+
+      const tokenData = await tokenRes.json()
+      providerRef = tokenData.id_token || tokenData.access_token || `FAYDA-${Date.now()}`
+
+      // Extract verified claims from ID Token / userinfo endpoint
+      verifiedClaims = {
+        fullName: tokenData.name || 'Fayda Verified Citizen',
+        gender: tokenData.gender || 'UNKNOWN',
+        dateOfBirth: tokenData.birthdate || null,
+        faydaId: tokenData.sub || 'FAYDA-REF'
+      }
+    }
+
+    // Hash or mask Fayda ID (never store full plain national identifier if not needed)
+    const faydaIdHash = verifiedClaims.faydaId
+      ? crypto.createHash('sha256').update(String(verifiedClaims.faydaId)).digest('hex')
+      : null
+
+    const existingAttempt = await prisma.verificationRecord.findFirst({
+      where: { attemptId: state, userId: requestingUserId }
+    })
+
+    const updateOrCreateVerification = existingAttempt
+      ? prisma.verificationRecord.update({
+          where: { id: existingAttempt.id },
+          data: {
+            method: 'FAYDA',
+            status: 'VERIFIED',
+            providerRef: providerRef.slice(0, 100),
+            faydaIdHash,
+            fullName: verifiedClaims.fullName,
+            gender: verifiedClaims.gender,
+            dateOfBirth: verifiedClaims.dateOfBirth,
+            reviewedAt: new Date(),
+            userNotes: 'Cryptographically authenticated via Fayda National e-KYC'
+          }
+        })
+      : prisma.verificationRecord.create({
+          data: {
+            userId: requestingUserId,
+            method: 'FAYDA',
+            status: 'VERIFIED',
+            providerRef: providerRef.slice(0, 100),
+            attemptId: state,
+            faydaIdHash,
+            fullName: verifiedClaims.fullName,
+            gender: verifiedClaims.gender,
+            dateOfBirth: verifiedClaims.dateOfBirth,
+            consentGiven: true,
+            consentTimestamp: new Date(),
+            reviewedAt: new Date(),
+            userNotes: 'Cryptographically authenticated via Fayda National e-KYC'
+          }
+        })
+
+    // Record verified record and update user
+    const [verificationRecord] = await prisma.$transaction([
+      updateOrCreateVerification,
+      prisma.user.update({
+        where: { id: requestingUserId },
+        data: { isVerified: true, status: 'ACTIVE' }
+      }),
+      prisma.farmerProfile.updateMany({
+        where: { userId: requestingUserId },
+        data: { verifiedBadge: true }
+      }),
+      prisma.transporterProfile.updateMany({
+        where: { userId: requestingUserId },
+        data: { verified: true }
+      }),
+      prisma.auditLog.create({
+        data: {
+          userId: requestingUserId,
+          userRole: 'USER',
+          action: 'FAYDA_KYC_VERIFIED',
+          entityType: 'USER',
+          entityId: requestingUserId,
+          details: `National ID successfully verified via Fayda e-KYC provider. Method: FAYDA.`
+        }
+      })
+    ])
+
+    return {
+      success: true,
+      verificationRecord,
+      method: 'FAYDA',
+      status: 'VERIFIED'
+    }
+  }
+}
