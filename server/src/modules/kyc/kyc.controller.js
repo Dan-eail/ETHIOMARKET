@@ -88,3 +88,132 @@ export const submitManualReview = async (req, res, next) => {
       documentType,
       documentNumber,
       userNotes,
+      consentGiven,
+      documentBase64,
+      documentFileName,
+      documentMimeType
+    } = req.body
+
+    let documentFile = null
+    if (documentBase64) {
+      documentFile = {
+        base64: documentBase64,
+        originalname: documentFileName,
+        mimetype: documentMimeType
+      }
+    }
+
+    const record = await ManualReviewService.submitReview({
+      userId: req.user.id,
+      documentType,
+      documentNumber,
+      documentFile,
+      userNotes,
+      consentGiven: Boolean(consentGiven)
+    })
+
+    res.status(201).json({
+      message: 'Manual review submitted successfully. EthioMarket compliance reviewers will evaluate your credentials.',
+      record: {
+        id: record.id,
+        method: record.method,
+        status: record.status,
+        documentType: record.documentType,
+        createdAt: record.createdAt
+      }
+    })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+}
+
+export const getAdminReviewQueue = async (req, res, next) => {
+  try {
+    const { status, page = 1, limit = 20 } = req.query
+    const result = await ManualReviewService.getReviewQueue({
+      status,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10)
+    })
+    res.json(result)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const approveManualReview = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { decisionReason } = req.body
+
+    const result = await ManualReviewService.approveReview({
+      recordId: id,
+      reviewerId: req.user.id,
+      decisionReason
+    })
+
+    res.json({
+      message: 'Manual review successfully approved. User identity is now marked as VERIFIED under method MANUAL_REVIEW.',
+      record: result
+    })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+}
+
+export const rejectManualReview = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { decisionReason } = req.body
+
+    const result = await ManualReviewService.rejectReview({
+      recordId: id,
+      reviewerId: req.user.id,
+      decisionReason
+    })
+
+    res.json({
+      message: 'Manual review rejected.',
+      record: result
+    })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+}
+
+export const requestManualReviewInfo = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { actionRequiredReason } = req.body
+
+    const result = await ManualReviewService.requestInfo({
+      recordId: id,
+      reviewerId: req.user.id,
+      actionRequiredReason
+    })
+
+    res.json({
+      message: 'Additional information requested from user.',
+      record: result
+    })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+}
+
+export const streamDocumentFile = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const fileInfo = await ManualReviewService.getDocumentStream({
+      recordId: id,
+      requestingUser: req.user,
+      requestingUserRoles: req.userRoles
+    })
+
+    res.setHeader('Content-Type', fileInfo.mimeType)
+    res.setHeader('Content-Disposition', `inline; filename="${fileInfo.fileName}"`)
+    res.sendFile(fileInfo.filePath)
+  } catch (err) {
+    res.status(403).json({ error: err.message })
+  }
+}
