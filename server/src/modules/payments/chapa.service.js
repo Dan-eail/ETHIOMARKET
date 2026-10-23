@@ -318,3 +318,103 @@ export class ChapaService {
 
     if (webhookSecret) {
       const computedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(rawBody || JSON.stringify(payload))
+        .digest('hex')
+
+      const signatureBuffer = Buffer.from(signature, 'utf8')
+      const computedBuffer = Buffer.from(computedSignature, 'utf8')
+
+      if (signatureBuffer.length !== computedBuffer.length || !crypto.timingSafeEqual(signatureBuffer, computedBuffer)) {
+        throw new Error('Invalid webhook signature. HMAC verification failed.')
+      }
+    }
+
+    const tx_ref = payload.tx_ref
+    if (!tx_ref) {
+      throw new Error('Missing tx_ref in webhook event payload.')
+    }
+
+    // 2. Event deduplication using eventId / hash
+    const eventId = payload.reference || `${tx_ref}-${payload.status}-${payload.amount}`
+    const existingEvent = await prisma.webhookEvent.findUnique({
+      where: {
+        provider_eventId: {
+          provider: 'CHAPA',
+          eventId
+        }
+      }
+    })
+
+    if (existingEvent && existingEvent.status === 'PROCESSED') {
+      return { status: 'DUPLICATE_ACKNOWLEDGED', eventId }
+    }
+
+    // Record incoming webhook event
+    const webhookRecord = await prisma.webhookEvent.create({
+      data: {
+        provider: 'CHAPA',
+        eventId,
+        eventType: payload.event || 'charge.complete',
+        merchantReference: tx_ref,
+        payloadHash: crypto.createHash('sha256').update(rawBody || JSON.stringify(payload)).digest('hex'),
+        payload: JSON.stringify({
+          tx_ref: payload.tx_ref,
+          status: payload.status,
+          amount: payload.amount,
+          currency: payload.currency,
+          reference: payload.reference
+        }),
+        status: 'RECEIVED'
+      }
+    })
+
+    // 3. Process payment update if status is success
+    if (payload.status === 'success') {
+      try {
+        await this.verifyPayment({
+          tx_ref,
+          mockProviderData: {
+            status: 'success',
+            reference: payload.reference || `CHAPA-WH-${Date.now()}`,
+            amount: payload.amount,
+            currency: payload.currency || 'ETB',
+            method: payload.method || 'webhook'
+          }
+        })
+
+        await prisma.webhookEvent.update({
+          where: { id: webhookRecord.id },
+          data: { status: 'PROCESSED', processedAt: new Date() }
+        })
+      } catch (err) {
+        await prisma.webhookEvent.update({
+          where: { id: webhookRecord.id },
+          data: { status: 'FAILED', processingError: err.message }
+        })
+        throw err
+      }
+    } else {
+      await prisma.webhookEvent.update({
+        where: { id: webhookRecord.id },
+        data: { status: 'IGNORED', processingError: `Non-success status: ${payload.status}` }
+      })
+    }
+
+    return { status: 'PROCESSED', eventId }
+  }
+
+  /**
+   * Reconcile payment with Chapa provider
+   */
+  static async reconcilePayment({ paymentId, adminUserId }) {
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { order: true }
+    })
+
+    if (!payment) {
+      throw new Error('Payment record not found.')
+    }
+
+    const verificationResult = await this.verifyPayment({
