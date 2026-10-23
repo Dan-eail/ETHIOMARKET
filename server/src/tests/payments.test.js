@@ -268,3 +268,86 @@ test('EthioMarket Chapa Payments, Webhooks, Reconciliation & Refund Tests', asyn
 
     // Webhook with valid signature should succeed
     const resValidSig = await fetch(`${BASE_URL}/payments/webhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-chapa-signature': validSignature
+      },
+      body: rawBodyString
+    })
+    const validData = await resValidSig.json()
+    assert.strictEqual(resValidSig.status, 200)
+    assert.strictEqual(validData.success, true)
+    assert.strictEqual(validData.status, 'PROCESSED')
+
+    // Verify order is now marked paid
+    const updatedOrder = await prisma.order.findUnique({ where: { id: newOrder.id } })
+    assert.strictEqual(updatedOrder.isPaid, true)
+    assert.strictEqual(updatedOrder.paymentStatus, 'PAID')
+
+    // Duplicate webhook should be acknowledged idempotently without double-charging
+    const resDuplicate = await fetch(`${BASE_URL}/payments/webhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-chapa-signature': validSignature
+      },
+      body: rawBodyString
+    })
+    const dupData = await resDuplicate.json()
+    assert.strictEqual(resDuplicate.status, 200)
+    assert.strictEqual(dupData.status, 'DUPLICATE_ACKNOWLEDGED')
+  })
+
+  await t.test('6. Payment reconciliation action updates and logs in AuditLog', async () => {
+    const resReconcile = await fetch(`${BASE_URL}/payments/${createdPaymentId}/reconcile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      }
+    })
+    const recData = await resReconcile.json()
+    assert.strictEqual(resReconcile.status, 200)
+    assert.strictEqual(recData.result.verified, true)
+
+    // Verify AuditLog entry exists
+    const auditLogs = await prisma.auditLog.findMany({
+      where: { entityType: 'PAYMENT', entityId: createdPaymentId }
+    })
+    assert.ok(auditLogs.length >= 1)
+  })
+
+  await t.test('7. Refund tracking validates amount limit and requires decision reason', async () => {
+    // Attempt refund with excessive amount
+    const resExcessive = await fetch(`${BASE_URL}/payments/${createdPaymentId}/refund`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${buyerToken}`
+      },
+      body: JSON.stringify({
+        amount: payableOrderAmount * 2, // Exceeds paid amount!
+        reason: 'Customer requested full refund'
+      })
+    })
+    assert.strictEqual(resExcessive.status, 400)
+
+    // Valid partial refund request
+    const resRefund = await fetch(`${BASE_URL}/payments/${createdPaymentId}/refund`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${buyerToken}`
+      },
+      body: JSON.stringify({
+        amount: 1000,
+        reason: 'Partial weight variance recorded upon delivery inspection'
+      })
+    })
+    const refundData = await resRefund.json()
+    assert.strictEqual(resRefund.status, 201)
+    assert.strictEqual(refundData.refund.amount, 1000)
+    assert.strictEqual(refundData.refund.status, 'REQUESTED')
+  })
+})
