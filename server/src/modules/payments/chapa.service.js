@@ -418,3 +418,108 @@ export class ChapaService {
     }
 
     const verificationResult = await this.verifyPayment({
+      tx_ref: payment.merchantReference,
+      requestingUserId: adminUserId,
+      requestingUserRoles: ['ADMIN']
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        userId: adminUserId,
+        userRole: 'ADMIN',
+        action: 'PAYMENT_RECONCILED',
+        entityType: 'PAYMENT',
+        entityId: paymentId,
+        details: `Manual reconciliation performed for Payment #${payment.merchantReference}. Result: ${verificationResult.verified ? 'SUCCESS' : 'FAILED'}.`
+      }
+    })
+
+    return verificationResult
+  }
+
+  /**
+   * Request a refund against a verified payment
+   */
+  static async requestRefund({ paymentId, amount, reason, requestedById, userRoles }) {
+    if (!reason || reason.trim().length < 5) {
+      throw new Error('A detailed reason (minimum 5 characters) is required for refund requests.')
+    }
+
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { order: true, refunds: true }
+    })
+
+    if (!payment) {
+      throw new Error('Payment not found.')
+    }
+
+    if (payment.status !== 'SUCCESS') {
+      throw new Error(`Only successful payments can be refunded (current status: ${payment.status}).`)
+    }
+
+    const isAdmin = userRoles && userRoles.includes('ADMIN')
+    if (!isAdmin && payment.buyerId !== requestedById) {
+      throw new Error('Unauthorized to request refund for this payment.')
+    }
+
+    const refundAmount = amount ? Number(amount) : payment.amount
+    if (refundAmount <= 0) {
+      throw new Error('Refund amount must be greater than zero.')
+    }
+
+    const totalRefundedSoFar = payment.refunds
+      .filter(r => r.status === 'COMPLETED' || r.status === 'REQUESTED')
+      .reduce((acc, r) => acc + r.amount, 0)
+
+    if (totalRefundedSoFar + refundAmount > payment.amount) {
+      throw new Error(`Refund amount exceeds remaining refundable balance (ETB ${payment.amount - totalRefundedSoFar}).`)
+    }
+
+    const refundReference = `REF-${payment.order.orderNumber}-${Date.now().toString(36).toUpperCase()}`
+
+    const refund = await prisma.refundRecord.create({
+      data: {
+        paymentId: payment.id,
+        orderId: payment.orderId,
+        refundReference,
+        amount: refundAmount,
+        currency: payment.currency,
+        reason,
+        status: isAdmin ? 'COMPLETED' : 'REQUESTED',
+        requestedById,
+        processedById: isAdmin ? requestedById : null
+      }
+    })
+
+    if (isAdmin) {
+      const isFullRefund = (totalRefundedSoFar + refundAmount) >= payment.amount
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED'
+        }
+      })
+
+      await prisma.order.update({
+        where: { id: payment.orderId },
+        data: {
+          paymentStatus: isFullRefund ? 'REFUNDED' : 'PARTIALLY_REFUNDED'
+        }
+      })
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        userId: requestedById,
+        userRole: isAdmin ? 'ADMIN' : 'BUYER',
+        action: isAdmin ? 'REFUND_COMPLETED' : 'REFUND_REQUESTED',
+        entityType: 'REFUND_RECORD',
+        entityId: refund.id,
+        details: `Refund of ETB ${refundAmount} for Payment #${payment.merchantReference} (${refund.status}). Reason: "${reason}".`
+      }
+    })
+
+    return refund
+  }
+}
