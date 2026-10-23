@@ -198,3 +198,123 @@ export class ChapaService {
       providerData = mockProviderData
     } else if (this.isConfigured()) {
       // Real server-to-server call to Chapa's official verify endpoint
+      const verifyRes = await fetch(`${config.chapa.baseUrl}/transaction/verify/${tx_ref}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${config.chapa.secretKey}`
+        }
+      })
+
+      const chapaRes = await verifyRes.json()
+
+      if (!verifyRes.ok || chapaRes.status !== 'success' || !chapaRes.data) {
+        // Record failure
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: 'FAILED',
+            failureReason: chapaRes.message || 'Provider verification reported failure.'
+          }
+        })
+        throw new Error(chapaRes.message || 'Chapa payment verification reported transaction not successful.')
+      }
+
+      providerData = chapaRes.data
+    } else {
+      // In unconfigured / test simulation mode without mock data, simulate test approval
+      providerData = {
+        status: 'success',
+        reference: `CHAPA-SIM-${Date.now()}`,
+        amount: payment.amount,
+        currency: 'ETB',
+        method: 'telebirr'
+      }
+    }
+
+    // Validate provider response fields strictly
+    const providerStatus = (providerData.status || '').toLowerCase()
+    if (providerStatus !== 'success') {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'FAILED',
+          failureReason: `Provider transaction status was "${providerData.status}" rather than "success".`
+        }
+      })
+      throw new Error(`Payment verification failed: Provider reported status "${providerData.status}".`)
+    }
+
+    // Verify amount matches exactly
+    const reportedAmount = Number(providerData.amount)
+    if (Math.abs(reportedAmount - payment.amount) > 0.01) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'FAILED',
+          failureReason: `Amount mismatch: expected ETB ${payment.amount}, provider reported ETB ${reportedAmount}.`
+        }
+      })
+      throw new Error(`Amount mismatch detected: Order expected ETB ${payment.amount}, but Chapa verified ETB ${reportedAmount}.`)
+    }
+
+    // Verify currency
+    if (providerData.currency && providerData.currency.toUpperCase() !== 'ETB') {
+      throw new Error(`Currency mismatch detected: Expected ETB, got ${providerData.currency}.`)
+    }
+
+    const providerReference = providerData.reference || providerData.transaction_id || `CHAPA-${Date.now()}`
+    const providerMethod = providerData.method || 'CHAPA'
+
+    // Atomic transaction transitioning payment and order
+    const [updatedPayment, updatedOrder] = await prisma.$transaction([
+      prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'SUCCESS',
+          providerReference,
+          providerMethod,
+          verifiedAt: new Date()
+        }
+      }),
+      prisma.order.update({
+        where: { id: payment.orderId },
+        data: {
+          paymentStatus: 'PAID',
+          paymentMethod: 'CHAPA',
+          paymentReference: tx_ref,
+          isPaid: true,
+          status: 'CONFIRMED'
+        }
+      }),
+      prisma.auditLog.create({
+        data: {
+          userId: requestingUserId || payment.buyerId,
+          userRole: isAdmin ? 'ADMIN' : 'BUYER',
+          action: 'PAYMENT_VERIFIED',
+          entityType: 'PAYMENT',
+          entityId: payment.id,
+          details: `Verified payment of ETB ${payment.amount} for Order #${payment.order.orderNumber} into EthioMarket merchant account via Chapa (${providerMethod}). Provider ref: ${providerReference}.`
+        }
+      })
+    ])
+
+    return {
+      verified: true,
+      alreadyProcessed: false,
+      payment: updatedPayment,
+      order: updatedOrder
+    }
+  }
+
+  /**
+   * Process incoming Chapa webhook with HMAC signature verification and deduplication
+   */
+  static async handleWebhook({ rawBody, signature, payload }) {
+    // 1. Verify HMAC SHA-256 signature
+    const webhookSecret = config.chapa.webhookSecret || config.chapa.secretKey || 'chapa_wh_secret_local_dev'
+    if (!signature) {
+      throw new Error('Missing x-chapa-signature header.')
+    }
+
+    if (webhookSecret) {
+      const computedSignature = crypto
