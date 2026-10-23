@@ -177,3 +177,94 @@ test('EthioMarket Chapa Payments, Webhooks, Reconciliation & Refund Tests', asyn
     })
     assert.strictEqual(resCurrencyMismatch.status, 400)
   })
+
+  await t.test('4. Successful server-side verification confirms payment and transitions order to PAID', async () => {
+    const resVerify = await fetch(`${BASE_URL}/payments/verify/${merchantReference}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${buyerToken}`
+      },
+      body: JSON.stringify({
+        mockProviderData: {
+          status: 'success',
+          reference: `CHAPA-TRX-${Date.now()}`,
+          amount: payableOrderAmount,
+          currency: 'ETB',
+          method: 'telebirr'
+        }
+      })
+    })
+
+    const verifyData = await resVerify.json()
+    assert.strictEqual(resVerify.status, 200)
+    assert.strictEqual(verifyData.verified, true)
+    assert.strictEqual(verifyData.payment.status, 'SUCCESS')
+    assert.strictEqual(verifyData.order.paymentStatus, 'PAID')
+    assert.strictEqual(verifyData.order.isPaid, true)
+
+    // Confirm in DB
+    const orderInDb = await prisma.order.findUnique({ where: { id: createdOrderId } })
+    assert.strictEqual(orderInDb.isPaid, true)
+    assert.strictEqual(orderInDb.paymentStatus, 'PAID')
+  })
+
+  await t.test('5. Webhook processing: Validates HMAC-SHA256 signature and handles idempotency', async () => {
+    // 1. Create a fresh order and payment for webhook test
+    const newOrder = await prisma.order.create({
+      data: {
+        orderNumber: 'ORD-WH-' + Date.now().toString().slice(-5),
+        buyerId: buyerUserId,
+        sellerId: product.sellerId,
+        subtotal: 10000,
+        deliveryFee: 2500,
+        totalAmount: 12500,
+        currency: 'ETB',
+        status: 'CONFIRMED',
+        paymentStatus: 'PENDING',
+        paymentMethod: 'CHAPA',
+        deliveryAddressSnapshot: 'Addis Ababa'
+      }
+    })
+
+    const whMerchantRef = `ETMPAY-${newOrder.orderNumber}-${Date.now().toString(36)}`
+    await prisma.payment.create({
+      data: {
+        orderId: newOrder.id,
+        buyerId: buyerUserId,
+        merchantReference: whMerchantRef,
+        amount: 12500,
+        currency: 'ETB',
+        status: 'INITIATED'
+      }
+    })
+
+    const webhookSecret = config.chapa.webhookSecret || config.chapa.secretKey || 'chapa_wh_secret_local_dev'
+    const webhookPayload = {
+      event: 'charge.complete',
+      tx_ref: whMerchantRef,
+      reference: 'CHAPA-WH-TRX-001',
+      status: 'success',
+      amount: 12500,
+      currency: 'ETB',
+      method: 'cbebirr'
+    }
+    const rawBodyString = JSON.stringify(webhookPayload)
+    const validSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBodyString)
+      .digest('hex')
+
+    // Webhook with invalid signature should be rejected (400)
+    const resInvalidSig = await fetch(`${BASE_URL}/payments/webhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-chapa-signature': 'invalid_signature_hex'
+      },
+      body: rawBodyString
+    })
+    assert.strictEqual(resInvalidSig.status, 400)
+
+    // Webhook with valid signature should succeed
+    const resValidSig = await fetch(`${BASE_URL}/payments/webhook`, {
