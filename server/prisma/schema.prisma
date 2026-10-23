@@ -367,3 +367,154 @@ model AuditLog {
   details    String?
   ipAddress  String?
   createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // ORDER, QUOTE, DELIVERY, DISPUTE, SYSTEM
+  read      Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model MarketPriceObservation {
+  id              String   @id @default(cuid())
+  cropName        String
+  categorySlug    String
+  marketName      String   // e.g. Ada'a Grain Hub, Meki Farm Gate, Hawassa ECX
+  region          String
+  pricePerUnit    Float
+  unit            String   // QUINTAL, KG, CRATE
+  trendPercentage Float    @default(0.0) // e.g. +3.5
+  observationDate DateTime @default(now())
+  source          String   // e.g. Ethiopia Commodity Exchange (ECX), Ministry of Agriculture
+  createdAt       DateTime @default(now())
+}
+
+model VerificationRecord {
+  id                    String    @id @default(cuid())
+  userId                String
+  method                String    // FAYDA, MANUAL_REVIEW
+  status                String    @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, PENDING_REVIEW, VERIFIED, REJECTED, ACTION_REQUIRED, EXPIRED
+  providerRef           String?   // Fayda transaction reference / auth code / session ID
+  attemptId             String?   // Attempt reference
+  faydaIdHash           String?   // SHA-256 hash or masked identifier of Fayda FIN
+  fullName              String?   // Verified or submitted full name
+  gender                String?
+  dateOfBirth           String?
+  idExpiry              DateTime?
+  documentType          String?   // KEBELE_ID, PASSPORT, DRIVING_LICENSE, TRADE_REGISTRATION, FARMER_ASSOCIATION_ID
+  documentNumber        String?   // Masked/submitted document number
+  documentFilePath      String?   // Path to securely stored document in private storage
+  documentFileName      String?   // Original sanitized filename
+  documentFileSize      Int?
+  documentMimeType      String?
+  userNotes             String?
+  reviewerNotes         String?
+  rejectionReason       String?
+  actionRequiredReason  String?
+  reviewerId            String?
+  reviewedAt            DateTime?
+  expiresAt             DateTime?
+  consentGiven          Boolean   @default(false)
+  consentTimestamp      DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer              User?     @relation("KYCReviewer", fields: [reviewerId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([method])
+}
+
+model Payment {
+  id                  String         @id @default(cuid())
+  orderId             String
+  buyerId             String
+  merchantReference   String         @unique // e.g. ETMPAY-ORD-123456-xxxx
+  providerReference   String?        // Chapa reference
+  amount              Float          // In ETB
+  currency            String         @default("ETB")
+  status              String         @default("INITIATED") // INITIATED, PENDING, SUCCESS, FAILED, CANCELLED, EXPIRED, REFUND_PENDING, PARTIALLY_REFUNDED, REFUNDED
+  providerMethod      String?        // e.g. chapa, telebirr, card, cbebirr
+  checkoutUrl         String?
+  idempotencyKey      String?        @unique
+  verifiedAt          DateTime?
+  failureReason       String?
+  metadata            String?        // Safe JSON string
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  order               Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  buyer               User           @relation(fields: [buyerId], references: [id])
+  refunds             RefundRecord[]
+
+  @@index([orderId])
+  @@index([buyerId])
+  @@index([status])
+}
+
+model WebhookEvent {
+  id                String    @id @default(cuid())
+  provider          String    @default("CHAPA")
+  eventId           String    // Provider event id or deterministic hash
+  eventType         String?
+  merchantReference String?
+  payloadHash       String?
+  payload           String?   // Non-sensitive serialized payload summary
+  status            String    @default("RECEIVED") // RECEIVED, PROCESSED, FAILED, DUPLICATE, IGNORED
+  processingError   String?
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@unique([provider, eventId])
+  @@index([merchantReference])
+}
+
+model RefundRecord {
+  id                String    @id @default(cuid())
+  paymentId         String
+  orderId           String
+  refundReference   String    @unique // e.g. REF-ORD-xxxx
+  providerRefundId  String?
+  amount            Float
+  currency          String    @default("ETB")
+  reason            String
+  status            String    @default("REQUESTED") // REQUESTED, PENDING, COMPLETED, FAILED, REJECTED
+  requestedById     String
+  processedById     String?
+  rejectionReason   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payment           Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  requestedBy       User      @relation("RefundRequester", fields: [requestedById], references: [id])
+  processedBy       User?     @relation("RefundProcessor", fields: [processedById], references: [id])
+
+  @@index([paymentId])
+  @@index([orderId])
+}
+
+
