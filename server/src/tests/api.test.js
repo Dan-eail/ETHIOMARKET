@@ -348,3 +348,33 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
     assert.strictEqual(resInv.status, 200)
     assert.ok(invData.invoice.invoiceNumber)
     assert.strictEqual(invData.invoice.financials.vatRatePercentage, 15)
+    assert.ok(invData.invoice.financials.grandTotal > 0)
+
+    // Repeat Order
+    const resRepeat = await fetch(`${BASE_URL}/orders/${orderId}/repeat`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
+    const repeatData = await resRepeat.json()
+    assert.strictEqual(resRepeat.status, 201)
+    assert.ok(repeatData.order.id)
+    assert.strictEqual(repeatData.order.notes, `Repeat of Order #${invData.invoice.orderNumber}`)
+  })
+
+  await t.test('13. Regional Market Prices & Product Favorites', async () => {
+    // Market prices
+    const resPrices = await fetch(`${BASE_URL}/market-prices`)
+    const pricesData = await resPrices.json()
+    assert.strictEqual(resPrices.status, 200)
+    assert.ok(pricesData.prices.length >= 1)
+
+    // Toggle Favorite
+    const resFavToggle = await fetch(`${BASE_URL}/favorites/${createdProductId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
+    const favData = await resFavToggle.json()
+    assert.strictEqual(resFavToggle.status, 201)
+    assert.strictEqual(favData.favorited, true)
+
+    // Get Favorites
