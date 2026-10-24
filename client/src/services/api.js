@@ -113,3 +113,29 @@ export const api = {
   getConversations: () => apiRequest('/conversations'),
   getMessages: (id) => apiRequest(`/conversations/${id}`),
   sendMessage: (id, text) => apiRequest(`/conversations/${id}/messages`, { method: 'POST', body: JSON.stringify({ text }) }),
+
+  // KYC Identity Verification (Fayda + Manual Fallback)
+  getKycStatus: () => apiRequest('/kyc/status'),
+  initiateFayda: (payload) => apiRequest('/kyc/fayda/initiate', { method: 'POST', body: JSON.stringify(payload) }),
+  verifyFaydaCallback: (payload) => apiRequest('/kyc/fayda/callback', { method: 'POST', body: JSON.stringify(payload) }),
+  submitManualKyc: (payload) => apiRequest('/kyc/manual/submit', { method: 'POST', body: JSON.stringify(payload) }),
+  getAdminKycQueue: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/kyc/manual/queue${query ? `?${query}` : ''}`)
+  },
+  approveManualKyc: (id, payload) => apiRequest(`/kyc/manual/${id}/approve`, { method: 'POST', body: JSON.stringify(payload) }),
+  rejectManualKyc: (id, payload) => apiRequest(`/kyc/manual/${id}/reject`, { method: 'POST', body: JSON.stringify(payload) }),
+  requestManualKycInfo: (id, payload) => apiRequest(`/kyc/manual/${id}/request-info`, { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Payments (Chapa Merchant Integration & Reconciliation)
+  initializePayment: (payload) => apiRequest('/payments/initialize', { method: 'POST', body: JSON.stringify(payload) }),
+  verifyPayment: (tx_ref, payload = {}) => apiRequest(`/payments/verify/${tx_ref}`, { method: 'POST', body: JSON.stringify(payload) }),
+  getPayments: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/payments${query ? `?${query}` : ''}`)
+  },
+  getPaymentById: (id) => apiRequest(`/payments/${id}`),
+  reconcilePayment: (id) => apiRequest(`/payments/${id}/reconcile`, { method: 'POST' }),
+  requestRefund: (id, payload) => apiRequest(`/payments/${id}/refund`, { method: 'POST', body: JSON.stringify(payload) }),
+  getPaymentReconciliationOverview: () => apiRequest('/payments/admin/overview'),
+}
