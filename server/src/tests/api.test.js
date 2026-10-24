@@ -378,3 +378,11 @@ test('EthioMarket Core API & Business Workflow Tests', async (t) => {
     assert.strictEqual(favData.favorited, true)
 
     // Get Favorites
+    const resFavList = await fetch(`${BASE_URL}/favorites`, {
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
+    const favListData = await resFavList.json()
+    assert.strictEqual(resFavList.status, 200)
+    assert.ok(favListData.favorites.length >= 1)
+  })
+})
