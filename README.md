@@ -78,3 +78,18 @@ npm --prefix server run prisma:push
 npm --prefix server run prisma:seed
 
 # 3. Start Backend Server (runs on http://localhost:5000)
+npm --prefix server run dev
+
+# 4. In a separate terminal, start Frontend (runs on http://localhost:5173)
+npm --prefix client run dev
+```
+
+Visit **http://localhost:5173** to view the live platform.
+
+---
+
+## 🧪 Running Automated Tests
+
+Run the backend integration test suite verifying authentication, RBAC, quote negotiations, atomic order generation, and delivery claiming:
+
+```bash
