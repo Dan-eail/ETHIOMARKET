@@ -78,3 +78,24 @@ export const AuthProvider = ({ children }) => {
         loading,
         activeRole,
         setActiveRole,
+        login,
+        register,
+        demoSwitch,
+        logout,
+        isAuthenticated: !!user,
+        isFarmer: user?.roles?.some(r => r.role === 'FARMER'),
+        isBuyer: user?.roles?.some(r => r.role === 'BUYER'),
+        isTransporter: user?.roles?.some(r => r.role === 'TRANSPORTER'),
+        isAdmin: user?.roles?.some(r => r.role === 'ADMIN'),
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
+  return context
+}
