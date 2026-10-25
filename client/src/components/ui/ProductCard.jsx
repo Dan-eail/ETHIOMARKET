@@ -88,3 +88,64 @@ export const ProductCard = ({ product, onNegotiate, onBuyNow, isFavoritedInitial
         <div className="p-5">
           {/* Seller Bio / Farm Name */}
           <div className="text-[11px] font-semibold text-slate-500 mb-1 flex items-center justify-between">
+            <span className="truncate">{product.seller?.farmerProfile?.farmName || sellerName}</span>
+            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
+              Stock: {product.availableQty} {product.unit}
+            </span>
+          </div>
+
+          {/* Title */}
+          <Link to={`/products/${product.id}`} className="block group-hover:text-ethio-700 transition-colors">
+            <h3 className="text-base font-bold text-slate-900 line-clamp-1 leading-snug">
+              {product.title}
+            </h3>
+          </Link>
+
+          {/* Variety / Description snippet */}
+          <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
+            {product.variety ? `${product.variety} variety · ` : ''}{product.description}
+          </p>
+
+          {/* Price display */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+            <div>
+              <span className="text-xs text-slate-400 font-medium block">Wholesale Rate</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs font-bold text-slate-600">ETB</span>
+                <span className="text-xl font-extrabold text-ethio-950">
+                  {product.pricePerUnit.toLocaleString()}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">
+                  / {product.unit.toLowerCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-right text-[11px] text-slate-500">
+              <span>Min. {product.minOrderQty} {product.unit.toLowerCase()}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Footer */}
+      <div className="p-5 pt-0 grid grid-cols-2 gap-2">
+        <button
+          onClick={() => onNegotiate ? onNegotiate(product) : null}
+          className="w-full py-2.5 px-3 rounded-2xl border border-sand-border text-xs font-bold text-slate-700 bg-sand-bg hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
+        >
+          <Scale className="w-3.5 h-3.5 text-ethio-700" />
+          <span>Negotiate</span>
+        </button>
+
+        <button
+          onClick={() => onBuyNow ? onBuyNow(product) : null}
+          className="w-full py-2.5 px-3 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-xs font-bold text-white transition-colors flex items-center justify-center gap-1 shadow-sm"
+        >
+          <span>Order Now</span>
+          <ArrowRight className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  )
+}
