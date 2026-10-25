@@ -108,3 +108,126 @@ export const DirectOrderModal = ({ product, isOpen, onClose, onSuccess }) => {
             </div>
 
             {/* Quantity */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Order Quantity ({product.unit})
+              </label>
+              <input
+                type="number"
+                min={product.minOrderQty}
+                max={product.availableQty}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-sm font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+              />
+              <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+                <span>Minimum order: {product.minOrderQty} {product.unit}</span>
+                <span>Available stock: {product.availableQty} {product.unit}</span>
+              </div>
+            </div>
+
+            {/* Delivery Address */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Destination Delivery Address
+              </label>
+              <input
+                type="text"
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                required
+                placeholder="e.g. Merkato Main Grain Terminal #4, Addis Ababa"
+                className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+              />
+            </div>
+
+            {/* Payment Method Selector */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Payment Option
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('CHAPA')}
+                  className={`p-3 rounded-2xl border text-xs font-bold text-center transition-all ${
+                    paymentMethod === 'CHAPA'
+                      ? 'border-emerald-700 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-600/20'
+                      : 'border-sand-border bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    <span>Chapa Online Checkout</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-normal block mt-0.5">Telebirr, CBE Birr, Cards</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('CASH_ON_DELIVERY')}
+                  className={`p-3 rounded-2xl border text-xs font-bold text-center transition-all ${
+                    paymentMethod === 'CASH_ON_DELIVERY'
+                      ? 'border-emerald-700 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-600/20'
+                      : 'border-sand-border bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Cash on Delivery</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-normal block mt-0.5">Pay upon cargo delivery</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Pricing summary */}
+            <div className="p-3.5 rounded-2xl bg-sand-subtle space-y-1.5 text-xs text-slate-600">
+              <div className="flex justify-between">
+                <span>Produce Subtotal:</span>
+                <span className="font-bold text-slate-800">ETB {subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Estimated Logistics / Haulage:</span>
+                <span className="font-bold text-slate-800">ETB {estimatedDelivery.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t border-slate-200 text-sm font-extrabold text-ethio-950">
+                <span>Total Payable:</span>
+                <span>ETB {totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Pinned Action buttons footer */}
+          <div className="px-6 py-3.5 border-t border-sand-border bg-slate-50 flex items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-xs font-bold text-white transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading ? (
+                <span>Confirming Order...</span>
+              ) : (
+                <>
+                  <span>Confirm & Place Order</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  )
+}
