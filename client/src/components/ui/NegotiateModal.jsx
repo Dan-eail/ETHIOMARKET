@@ -93,3 +93,97 @@ export const NegotiateModal = ({ product, isOpen, onClose, onSuccess }) => {
 
             {/* Quantity & Proposed Price */}
             <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Target Quantity ({product.unit})
+                </label>
+                <input
+                  type="number"
+                  min={product.minOrderQty}
+                  max={product.availableQty}
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-sm font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+                <span className="text-[10px] text-slate-400 block mt-1">
+                  Max available: {product.availableQty} {product.unit}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Your Offer (ETB / {product.unit.toLowerCase()})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={offeredPrice}
+                  onChange={(e) => setOfferedPrice(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-sm font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+                <span className="text-[10px] text-slate-400 block mt-1">
+                  Listed: {product.pricePerUnit.toLocaleString()} ETB
+                </span>
+              </div>
+            </div>
+
+            {/* Note to Seller */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Terms & Logistics Note (Optional)
+              </label>
+              <textarea
+                rows="2"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g., We can pick up directly from your farm depot, or please include delivery to Addis Ababa."
+                className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none resize-none"
+              />
+            </div>
+
+            {/* Estimated Offer Total */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-semibold text-ethio-800 block">Proposed Total Offer</span>
+                <span className="text-lg font-extrabold text-ethio-950">ETB {estTotal}</span>
+              </div>
+              <span className="text-[11px] text-emerald-700 font-bold bg-white px-2.5 py-1 rounded-full shadow-sm">
+                Escrow Protection
+              </span>
+            </div>
+
+          </div>
+
+          {/* Action buttons pinned footer */}
+          <div className="px-6 py-3.5 border-t border-sand-border bg-slate-50 flex items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-xs font-bold text-white transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading ? (
+                <span>Submitting...</span>
+              ) : (
+                <>
+                  <span>Send Quotation Offer</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  )
+}
