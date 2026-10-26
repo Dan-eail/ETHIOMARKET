@@ -518,3 +518,282 @@ export const TransporterDashboard = () => {
           </div>
 
           <div className="bg-white rounded-3xl border border-sand-border p-6 shadow-card space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-slate-900 bg-sand-subtle px-3 py-1 rounded-full">
+                Plate: 3-B19283-AA
+              </span>
+              <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                <ShieldCheck className="w-4 h-4" />
+                Verified
+              </span>
+            </div>
+            <h4 className="text-base font-bold text-slate-900">Toyota Hilux Rapid Pickup</h4>
+            <div className="text-xs text-slate-500 space-y-1">
+              <p>Capacity: <strong>2.0 Metric Tons</strong> (~20 Quintals)</p>
+              <p>Model Year: 2023 · Heavy Duty 4WD</p>
+              <p className="text-emerald-700 font-semibold">Ideal for High-Value Avocados & Specialty Produce</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VEHICLE REGISTRATION MODAL */}
+      {vehicleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Register Transport Vehicle</h3>
+              <button onClick={() => setVehicleModalOpen(false)}>
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRegisterVehicle} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Plate Number</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="3-C99882-AA"
+                  value={vehicleForm.plateNumber}
+                  onChange={(e) => setVehicleForm({ ...vehicleForm, plateNumber: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Type</label>
+                  <select
+                    value={vehicleForm.vehicleType}
+                    onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleType: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  >
+                    <option value="PICKUP">Pickup (1-2t)</option>
+                    <option value="ISUZU">Isuzu (5-8.5t)</option>
+                    <option value="FSR">FSR (10-14t)</option>
+                    <option value="TRAILER">Trailer (30t+)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Capacity (Tons)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    required
+                    value={vehicleForm.capacityTons}
+                    onChange={(e) => setVehicleForm({ ...vehicleForm, capacityTons: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setVehicleModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-ethio-700 text-white text-xs font-bold shadow-sm"
+                >
+                  Register Vehicle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PICKUP VERIFICATION MODAL */}
+      {pickupModalDelivery && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Verify Farm Cargo Pickup</h3>
+                <p className="text-xs text-slate-500">Delivery #{pickupModalDelivery.deliveryNumber}</p>
+              </div>
+              <button
+                onClick={() => setPickupModalDelivery(null)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleVerifyPickupSubmit} className="space-y-4">
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                Ask the farmer at the depot for their <strong>6-digit pickup verification code</strong>. Entering it certifies the cargo has been inspected and loaded onto your vehicle.
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  6-Digit Farm Pickup Code
+                </label>
+                <input
+                  type="text"
+                  maxLength="6"
+                  required
+                  placeholder="e.g. 849201"
+                  value={pickupCodeInput}
+                  onChange={(e) => setPickupCodeInput(e.target.value)}
+                  className="w-full text-center tracking-widest text-lg font-mono font-bold px-4 py-3 rounded-2xl border border-sand-border focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPickupModalDelivery(null)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm transition-colors"
+                >
+                  Authenticate Pickup
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELIVERY VERIFICATION MODAL */}
+      {deliveryModalDelivery && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Verify Customer Delivery Handover</h3>
+                <p className="text-xs text-slate-500">Recipient: {deliveryModalDelivery.recipientName}</p>
+              </div>
+              <button
+                onClick={() => setDeliveryModalDelivery(null)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleVerifyDeliverySubmit} className="space-y-4">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
+                Ask the recipient / buyer for their <strong>6-digit delivery handover code</strong> once cargo is safely offloaded. This immediately releases your transport payment!
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  6-Digit Delivery Handover Code
+                </label>
+                <input
+                  type="text"
+                  maxLength="6"
+                  required
+                  placeholder="e.g. 592819"
+                  value={deliveryCodeInput}
+                  onChange={(e) => setDeliveryCodeInput(e.target.value)}
+                  className="w-full text-center tracking-widest text-lg font-mono font-bold px-4 py-3 rounded-2xl border border-sand-border focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryModalDelivery(null)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-sm transition-colors"
+                >
+                  Confirm Handover & Payout
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELAY / TRANSIT NOTICE MODAL */}
+      {delayModalDelivery && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Log Transit Delay Notice</h3>
+                <p className="text-xs text-slate-500">Notifies the customer & marketplace operations</p>
+              </div>
+              <button
+                onClick={() => setDelayModalDelivery(null)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleReportDelaySubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Current Location</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Modjo Expressway Toll Plaza"
+                  value={delayLocation}
+                  onChange={(e) => setDelayLocation(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Delay</label>
+                <textarea
+                  rows="3"
+                  required
+                  placeholder="e.g. Weigh-scale congestion / police checkpoint inspection / heavy rain near Bishoftu"
+                  value={delayReason}
+                  onChange={(e) => setDelayReason(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDelayModalDelivery(null)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm"
+                >
+                  Submit Notice
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* KYC Verification Modal */}
+      <KycVerificationModal
+        isOpen={kycModalOpen}
+        onClose={() => setKycModalOpen(false)}
+        onVerificationSuccess={() => {
+          loadData()
+          triggerToast('Identity verification updated!')
+        }}
+      />
+    </div>
+  )
+}
