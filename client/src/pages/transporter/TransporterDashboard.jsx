@@ -338,3 +338,183 @@ export const TransporterDashboard = () => {
                           <span className="text-slate-500 text-[11px]">{del.pickupAddress}</span>
                         </div>
                       </div>
+
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block text-slate-900">Destination: {del.dropoffCity}, {del.dropoffRegion}</strong>
+                          <span className="text-slate-500 text-[11px]">{del.dropoffAddress}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>Cargo: ~{del.cargoWeightQuintals} Quintals</span>
+                      <span>Est. Distance: {del.distanceKm || 50} km</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleClaimJob(del.id)}
+                    className="w-full py-3 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Claim Delivery Assignment</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: MY JOBS */}
+      {activeTab === 'my-jobs' && (
+        <div className="bg-white rounded-3xl border border-sand-border shadow-card overflow-hidden divide-y divide-slate-100">
+          {myJobs.length === 0 ? (
+            <div className="p-12 text-center text-xs text-slate-500">
+              You haven't claimed any delivery assignments yet. Browse the "Available Cargo Jobs" tab!
+            </div>
+          ) : (
+            myJobs.map((job) => (
+              <div key={job.id} className="p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md">
+                        #{job.deliveryNumber}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">
+                        Route: {job.pickupCity} → {job.dropoffCity}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Recipient: {job.recipientName} ({job.recipientPhone})
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-800">
+                      {job.status}
+                    </span>
+                    <span className="text-xs font-extrabold text-ethio-950">
+                      ETB {job.deliveryFee.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Cargo Security & Verification Status */}
+                <div className="p-3 rounded-2xl bg-sand-subtle flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400">Cargo Seal:</span>
+                    <strong className="font-mono text-slate-800">{job.cargoSealNumber || 'ET-SEAL-8921'}</strong>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      job.isPickupVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      <ShieldCheck className="w-3 h-3" />
+                      {job.isPickupVerified ? 'Pickup Verified' : 'Pickup Pending'}
+                    </span>
+
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      job.isDeliveryVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      <CheckCircle2 className="w-3 h-3" />
+                      {job.isDeliveryVerified ? 'Delivery Verified' : 'Delivery Pending'}
+                    </span>
+                  </div>
+                </div>
+
+                {job.reportedDelayReason && (
+                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span><strong>Active Delay Notice:</strong> {job.reportedDelayReason}</span>
+                  </div>
+                )}
+
+                {/* Progress actions */}
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                  <span className="text-xs font-bold text-slate-500 mr-2">Fulfillment Actions:</span>
+                  
+                  {job.status === 'ASSIGNED' && (
+                    <button
+                      onClick={() => { setPickupModalDelivery(job); setPickupCodeInput(''); }}
+                      className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Authenticate Farm Pickup (Enter Code)</span>
+                    </button>
+                  )}
+
+                  {job.status === 'PICKED_UP' && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => handleUpdateStatus(job.id, 'IN_TRANSIT', 'Vehicle departed farm depot, entered expressway', job.pickupCity)}
+                        className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+                      >
+                        Start Highway Transit
+                      </button>
+                      <button
+                        onClick={() => { setDelayModalDelivery(job); setDelayReason(''); setDelayLocation(''); }}
+                        className="px-3.5 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-700 hover:bg-slate-50"
+                      >
+                        Report Traffic / Delay Notice
+                      </button>
+                    </div>
+                  )}
+
+                  {job.status === 'IN_TRANSIT' && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => { setDeliveryModalDelivery(job); setDeliveryCodeInput(''); }}
+                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Authenticate Customer Delivery (Enter Code)</span>
+                      </button>
+                      <button
+                        onClick={() => { setDelayModalDelivery(job); setDelayReason(''); setDelayLocation(''); }}
+                        className="px-3.5 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-700 hover:bg-slate-50"
+                      >
+                        Report Road Incident
+                      </button>
+                    </div>
+                  )}
+
+                  {job.status === 'DELIVERED' && (
+                    <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Delivery Authenticated & Payout Released</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: FLEET VEHICLES */}
+      {activeTab === 'fleet' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl border border-sand-border p-6 shadow-card space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-slate-900 bg-sand-subtle px-3 py-1 rounded-full">
+                Plate: 3-A48291-AA
+              </span>
+              <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                <ShieldCheck className="w-4 h-4" />
+                Verified
+              </span>
+            </div>
+            <h4 className="text-base font-bold text-slate-900">Isuzu Medium Haulage Cargo</h4>
+            <div className="text-xs text-slate-500 space-y-1">
+              <p>Capacity: <strong>8.5 Metric Tons</strong> (~85 Quintals)</p>
+              <p>Model Year: 2022 · Enclosed Dry Van Body</p>
+              <p className="text-emerald-700 font-semibold">Active & Eligible for Bulk Grain / Coffee Runs</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-sand-border p-6 shadow-card space-y-3">
