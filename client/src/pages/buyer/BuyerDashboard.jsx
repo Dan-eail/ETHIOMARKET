@@ -338,3 +338,173 @@ export const BuyerDashboard = () => {
                       </p>
                       {order.delivery?.transporter && (
                         <p className="text-emerald-700 font-bold mt-1">
+                          Assigned Transporter: {order.delivery.transporter.companyName} (★ {order.delivery.transporter.rating})
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Delivery Handover Code */}
+                  {order.delivery?.deliveryVerificationCode && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-900 font-bold">🔐 Delivery Handover Verification Code:</span>
+                        <span className="font-mono font-extrabold text-emerald-950 bg-white px-2.5 py-0.5 rounded-md border border-emerald-300 tracking-wider">
+                          {order.delivery.deliveryVerificationCode}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-emerald-700 font-medium">
+                        (Provide to driver ONLY after inspecting cargo)
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Delivery Event Timeline */}
+                  {order.delivery?.events && order.delivery.events.length > 0 && (
+                    <div className="pl-4 border-l-2 border-emerald-500 space-y-1.5 text-xs">
+                      <span className="text-[11px] font-bold text-emerald-800 block">Latest Logistics Event:</span>
+                      <p className="font-semibold text-slate-800">
+                        {order.delivery.events[0].description} ({order.delivery.events[0].location})
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Order Actions: Invoice & Repeat & Chapa Payment */}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => handleViewInvoice(order.id)}
+                        disabled={loadingInvoice}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-ethio-700" />
+                        <span>View Official Fiscal Invoice (15% VAT)</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleRepeatOrder(order.id)}
+                        disabled={repeatingOrderId === order.id}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sand-bg hover:bg-slate-200 text-xs font-bold text-ethio-900 transition-colors border border-sand-border"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-ethio-700" />
+                        <span>{repeatingOrderId === order.id ? 'Placing Repeat...' : 'Repeat This Order'}</span>
+                      </button>
+                    </div>
+
+                    {!order.isPaid && order.paymentStatus !== 'PAID' && (
+                      <button
+                        onClick={() => handlePayWithChapa(order.id)}
+                        disabled={payingOrderId === order.id}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-sm transition-all"
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                        <span>{payingOrderId === order.id ? 'Connecting to Chapa...' : `Pay via Chapa (ETB ${order.totalAmount.toLocaleString()})`}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: QUOTES */}
+      {activeTab === 'quotes' && (
+        <div className="bg-white rounded-3xl border border-sand-border shadow-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-sand-border flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900">Active Price Negotiations</h3>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {quotes.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-500">No active quotations.</div>
+            ) : (
+              quotes.map((q) => (
+                <div key={q.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1.5 max-w-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md">
+                        #{q.quoteNumber}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">{q.product?.title}</span>
+                      <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                        {q.status}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600">
+                      Producer: <strong>{q.seller?.name}</strong> · Offered: <strong>{q.offeredPrice || q.requestedPrice} ETB</strong> / {q.unit}
+                    </p>
+
+                    {q.counterpartyNote && (
+                      <p className="text-xs text-slate-600 italic bg-sand-subtle p-2.5 rounded-xl">
+                        Farmer: "{q.counterpartyNote}"
+                      </p>
+                    )}
+                  </div>
+
+                  {q.status !== 'ACCEPTED' && q.status !== 'REJECTED' && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setCounterQuoteId(q.id)
+                          setCounterPrice(q.offeredPrice || q.requestedPrice)
+                        }}
+                        className="px-3.5 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-700 hover:bg-slate-50"
+                      >
+                        Counter Again
+                      </button>
+                      <button
+                        onClick={() => handleAcceptQuote(q.id)}
+                        className="px-4 py-2 rounded-xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm"
+                      >
+                        Accept Terms & Place Order
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* COUNTER MODAL */}
+      {counterQuoteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <h3 className="text-sm font-bold text-slate-900">Send Revised Counter-Offer</h3>
+            <form onSubmit={handleCounterSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Your Price (ETB)</label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  value={counterPrice}
+                  onChange={(e) => setCounterPrice(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Note</label>
+                <textarea
+                  rows="2"
+                  value={counterNote}
+                  onChange={(e) => setCounterNote(e.target.value)}
+                  placeholder="e.g. Can do this price if delivery is made this Friday."
+                  className="w-full px-4 py-2 rounded-2xl border border-sand-border text-xs resize-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCounterQuoteId(null)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-ethio-700 text-white text-xs font-bold shadow-sm"
