@@ -538,3 +538,335 @@ export const FarmerDashboard = () => {
 
                     {q.note && (
                       <p className="text-xs text-slate-500 italic bg-sand-subtle p-2.5 rounded-xl">
+                        "{q.note}"
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions: Accept or Counter */}
+                  {q.status !== 'ACCEPTED' && q.status !== 'REJECTED' && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setCounterQuoteId(q.id)
+                          setCounterPrice(q.offeredPrice || q.requestedPrice)
+                        }}
+                        className="px-3.5 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-700 hover:bg-slate-50"
+                      >
+                        Counter Offer
+                      </button>
+                      <button
+                        onClick={() => handleAcceptQuote(q.id)}
+                        className="px-4 py-2 rounded-xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm"
+                      >
+                        Accept Terms & Create Order
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CREATE PRODUCT MODAL */}
+      {addModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-float border border-sand-border my-auto">
+            
+            <div className="px-6 py-4 sm:py-5 border-b border-sand-border flex items-center justify-between bg-sand-bg shrink-0">
+              <div className="flex items-center gap-2">
+                <Sprout className="w-5 h-5 text-ethio-700" />
+                <h3 className="text-base font-bold text-slate-900">List New Produce for Sale</h3>
+              </div>
+              <button onClick={() => setAddModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateProduct} className="flex flex-col flex-1 overflow-hidden min-h-0">
+              <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 overscroll-contain">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Crop Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Meki Fresh Red Onions (ቀይ ሽንኩርት)"
+                  value={newProduct.title}
+                  onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
+                  <select
+                    value={newProduct.categoryId}
+                    onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Cultivar Variety</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Bombay Red, Magna"
+                    value={newProduct.variety}
+                    onChange={(e) => setNewProduct({ ...newProduct, variety: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Unit</label>
+                  <select
+                    value={newProduct.unit}
+                    onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  >
+                    <option value="QUINTAL">Quintal (100kg)</option>
+                    <option value="KG">Kilogram (kg)</option>
+                    <option value="CRATE">Crate</option>
+                    <option value="SACK">Sack (Jute bag)</option>
+                    <option value="TON">Ton</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Price / Unit (ETB)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="3400"
+                    value={newProduct.pricePerUnit}
+                    onChange={(e) => setNewProduct({ ...newProduct, pricePerUnit: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Available Qty</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="150"
+                    value={newProduct.availableQty}
+                    onChange={(e) => setNewProduct({ ...newProduct, availableQty: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Region</label>
+                  <input
+                    type="text"
+                    required
+                    value={newProduct.region}
+                    onChange={(e) => setNewProduct({ ...newProduct, region: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Town / Hub</label>
+                  <input
+                    type="text"
+                    required
+                    value={newProduct.city}
+                    onChange={(e) => setNewProduct({ ...newProduct, city: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Detailed Description</label>
+                <textarea
+                  rows="3"
+                  required
+                  placeholder="Describe curing, soil conditions, shelf life..."
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Produce Photo URL</label>
+                <input
+                  type="url"
+                  value={newProduct.imageUrl}
+                  onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              </div>
+
+              {/* Pinned Action Footer */}
+              <div className="px-6 py-3.5 border-t border-sand-border bg-slate-50 flex justify-end gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setAddModalOpen(false)}
+                  className="px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingProduct}
+                  className="px-6 py-2.5 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm"
+                >
+                  {savingProduct ? 'Publishing...' : 'Publish Listing'}
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* COUNTER OFFER MODAL */}
+      {counterQuoteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <h3 className="text-sm font-bold text-slate-900">Submit Counter-Offer</h3>
+            <form onSubmit={handleCounterSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Your Proposed Price (ETB)</label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  value={counterPrice}
+                  onChange={(e) => setCounterPrice(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Note to Buyer</label>
+                <textarea
+                  rows="2"
+                  value={counterNote}
+                  onChange={(e) => setCounterNote(e.target.value)}
+                  placeholder="e.g. Can meet you at this rate for direct warehouse pickup."
+                  className="w-full px-4 py-2 rounded-2xl border border-sand-border text-xs resize-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCounterQuoteId(null)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm transition-colors"
+                >
+                  Send Counter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK STOCK ADJUSTMENT MODAL */}
+      {stockModalProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-float border border-sand-border my-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Adjust Inventory & Stock Alerts</h3>
+                <p className="text-xs text-slate-500">{stockModalProduct.title}</p>
+              </div>
+              <button
+                onClick={() => setStockModalProduct(null)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStock} className="space-y-4 pt-2">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Available Stock ({stockModalProduct.unit})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  required
+                  value={stockQty}
+                  onChange={(e) => setStockQty(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+                <span className="text-[11px] text-slate-400 mt-1 block">
+                  Current reserved stock for pending orders: {stockModalProduct.reservedQty} {stockModalProduct.unit}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Low-Stock Warning Threshold ({stockModalProduct.unit})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min="1"
+                  required
+                  value={stockThreshold}
+                  onChange={(e) => setStockThreshold(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs font-semibold focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+                <span className="text-[11px] text-slate-400 mt-1 block">
+                  You will receive in-app alerts and listing badges when available quantity drops below this level.
+                </span>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setStockModalProduct(null)}
+                  className="px-4 py-2 rounded-xl border border-sand-border text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingStock}
+                  className="px-5 py-2 rounded-xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm"
+                >
+                  {savingStock ? 'Saving...' : 'Update Inventory'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* KYC Verification Modal */}
+      <KycVerificationModal
+        isOpen={kycModalOpen}
+        onClose={() => setKycModalOpen(false)}
+        onVerificationSuccess={() => {
+          loadData()
+          triggerToast('Identity verification updated!')
+        }}
+      />
+    </div>
+  )
+}
