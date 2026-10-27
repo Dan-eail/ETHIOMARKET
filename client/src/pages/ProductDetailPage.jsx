@@ -218,3 +218,87 @@ export const ProductDetailPage = () => {
               onClick={() => setDirectOrderOpen(true)}
               className="py-3.5 px-6 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2"
             >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Direct Purchase</span>
+            </button>
+          </div>
+
+          {/* Seller Profile Card */}
+          <div className="p-5 rounded-3xl bg-sand-subtle border border-sand-border flex items-center justify-between">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-ethio-700 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                {product.seller?.name?.[0] || 'F'}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-slate-900">{product.seller?.name}</h4>
+                  {isVerified && (
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Verified Farmer
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {product.seller?.farmerProfile?.farmName || 'Rift Valley Agricultural Enterprise'}
+                </p>
+              </div>
+            </div>
+
+            <div className="hidden sm:block text-right text-xs text-slate-500">
+              <span className="font-semibold block">{product.seller?.farmerProfile?.experienceYears || 10}+ Years Farming</span>
+              <span>{product.seller?.farmerProfile?.farmSizeHectares || 15} Hectares</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Related Produce Section */}
+      {related.length > 0 && (
+        <section className="pt-10 border-t border-sand-border space-y-6">
+          <h2 className="text-xl font-extrabold text-ethio-950">
+            Similar Produce in this Category
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {related.map((prod) => (
+              <ProductCard
+                key={prod.id}
+                product={prod}
+                onNegotiate={() => {
+                  setProduct(prod)
+                  setNegotiateOpen(true)
+                }}
+                onBuyNow={() => {
+                  setProduct(prod)
+                  setDirectOrderOpen(true)
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Modals */}
+      <NegotiateModal
+        product={product}
+        isOpen={negotiateOpen}
+        onClose={() => setNegotiateOpen(false)}
+        onSuccess={(quote) => {
+          setToastMessage(`Quotation #${quote.quoteNumber} submitted successfully!`)
+        }}
+      />
+
+      <DirectOrderModal
+        product={product}
+        isOpen={directOrderOpen}
+        onClose={() => setDirectOrderOpen(false)}
+        onSuccess={(order) => {
+          setToastMessage(`Order #${order.orderNumber} confirmed! Stock reserved.`)
+        }}
+      />
+
+    </div>
+  )
+}
