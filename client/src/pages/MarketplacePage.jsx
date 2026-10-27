@@ -228,3 +228,93 @@ export const MarketplacePage = () => {
               currentCategory === cat.slug
                 ? 'bg-ethio-700 text-white'
                 : 'bg-white text-slate-700 border border-sand-border hover:bg-slate-50'
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Grid: Filters Sidebar + Products Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        {/* Left Filter Sidebar */}
+        <div className="space-y-6 bg-white p-5 rounded-3xl border border-sand-border h-fit shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
+              <SlidersHorizontal className="w-4 h-4 text-ethio-700" />
+              <span>Filters & Sorting</span>
+            </div>
+            {(currentCategory || currentSearch || currentRegion !== 'all' || currentOrganic) && (
+              <button
+                onClick={clearAllFilters}
+                className="text-[11px] font-bold text-red-600 hover:text-red-700"
+              >
+                Reset All
+              </button>
+            )}
+          </div>
+
+          {/* Region Filter */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Region</label>
+            <select
+              value={currentRegion}
+              onChange={(e) => updateParam('region', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-sand-border text-xs bg-sand-bg focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+            >
+              <option value="all">All Ethiopian Regions</option>
+              <option value="Oromia">Oromia (Meki, Adama, Bishoftu)</option>
+              <option value="Amhara">Amhara (Bahir Dar, Gondar)</option>
+              <option value="Sidama">Sidama (Hawassa)</option>
+              <option value="SNNPR / Sidama">SNNPR & Guji</option>
+              <option value="Addis Ababa">Addis Ababa</option>
+              <option value="Tigray">Tigray</option>
+              <option value="Dire Dawa">Dire Dawa & Harar</option>
+            </select>
+          </div>
+
+          {/* Unit Filter */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Measurement Unit</label>
+            <select
+              value={currentUnit}
+              onChange={(e) => updateParam('unit', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-sand-border text-xs bg-sand-bg focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+            >
+              <option value="all">Any Unit</option>
+              <option value="QUINTAL">Quintal (100 kg)</option>
+              <option value="KG">Kilogram (kg)</option>
+              <option value="CRATE">Crate (20-25 kg)</option>
+              <option value="SACK">Sack (Jute bag)</option>
+              <option value="TON">Metric Ton</option>
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Sort Results</label>
+            <select
+              value={currentSort}
+              onChange={(e) => updateParam('sort', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-sand-border text-xs bg-sand-bg focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+            >
+              <option value="newest">Newest Listings</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="popular">Most Inquired</option>
+            </select>
+          </div>
+
+          {/* Organic Checkbox */}
+          <div className="pt-2">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={currentOrganic}
+                onChange={(e) => updateParam('organic', e.target.checked ? 'true' : '')}
+                className="w-4 h-4 rounded text-ethio-700 focus:ring-ethio-600"
+              />
+              <span className="text-xs font-bold text-slate-700">100% Certified Organic</span>
+            </label>
+          </div>
