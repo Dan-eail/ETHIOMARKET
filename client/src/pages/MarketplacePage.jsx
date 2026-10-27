@@ -488,3 +488,59 @@ export const MarketplacePage = () => {
                     <div
                       key={idx}
                       className="p-4 rounded-2xl border border-sand-border bg-sand-subtle/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white text-[11px] font-black">
+                            {match.matchScore}% Match
+                          </span>
+                          <h5 className="text-sm font-bold text-slate-900">{match.product.title}</h5>
+                        </div>
+
+                        <p className="text-xs text-slate-500">
+                          Supplier: <strong>{match.product.seller?.farmerProfile?.farmName || match.product.seller?.name}</strong> · Rate: <strong>ETB {match.product.pricePerUnit?.toLocaleString()}/{match.product.unit.toLowerCase()}</strong>
+                        </p>
+
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {match.matchReasons?.map((reason, rIdx) => (
+                            <span key={rIdx} className="text-[10px] font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-700">
+                              ✓ {reason}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            setMatchModalOpen(false)
+                            setSelectedProduct(match.product)
+                            setNegotiateOpen(true)
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-sand-border bg-white text-xs font-bold text-slate-700 hover:bg-slate-50"
+                        >
+                          Negotiate
+                        </button>
+                        <button
+                          onClick={() => {
+                            setMatchModalOpen(false)
+                            setSelectedProduct(match.product)
+                            setDirectOrderOpen(true)
+                          }}
+                          className="px-4 py-1.5 rounded-xl bg-ethio-700 text-white text-xs font-bold hover:bg-ethio-800"
+                        >
+                          Order Direct
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
