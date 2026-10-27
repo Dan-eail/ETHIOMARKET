@@ -408,3 +408,83 @@ export const MarketplacePage = () => {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Matching Criteria Input Form */}
+            <form onSubmit={handleMatchSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Produce / Crop Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Teff, Onion, Garlic, Coffee"
+                  value={matchCropQuery}
+                  onChange={(e) => setMatchCropQuery(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Target Quantity</label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  placeholder="e.g. 20"
+                  value={matchQty}
+                  onChange={(e) => setMatchQty(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Preferred Region (Optional)</label>
+                <select
+                  value={matchRegion}
+                  onChange={(e) => setMatchRegion(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-2xl border border-sand-border text-xs focus:ring-2 focus:ring-ethio-600 focus:outline-none"
+                >
+                  <option value="">Any Ethiopian Region</option>
+                  <option value="Oromia">Oromia</option>
+                  <option value="Amhara">Amhara</option>
+                  <option value="Sidama">Sidama</option>
+                  <option value="Southern">Southern</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 pt-6">
+                <input
+                  type="checkbox"
+                  id="modalOrganic"
+                  checked={matchOrganic}
+                  onChange={(e) => setMatchOrganic(e.target.checked)}
+                  className="w-4 h-4 rounded text-ethio-700 focus:ring-ethio-600"
+                />
+                <label htmlFor="modalOrganic" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                  Require 100% Certified Organic Harvest
+                </label>
+              </div>
+
+              <div className="col-span-1 sm:col-span-2 flex justify-end gap-2 pt-2">
+                <button
+                  type="submit"
+                  disabled={matchingLoading}
+                  className="px-6 py-2.5 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-white text-xs font-bold shadow-sm transition-all"
+                >
+                  {matchingLoading ? 'Analyzing Platform Suppliers...' : 'Find Matches'}
+                </button>
+              </div>
+            </form>
+
+            {/* Matched Suppliers Results */}
+            {matchResults.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Top Ranked Matches ({matchResults.length} Found)
+                </h4>
+
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                  {matchResults.map((match, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl border border-sand-border bg-sand-subtle/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
