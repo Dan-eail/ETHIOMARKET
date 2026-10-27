@@ -33,3 +33,18 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
+          <BrowserRouter>
+            <div className="min-h-screen flex flex-col bg-sand-bg text-slate-900 font-sans selection:bg-ethio-200">
+              <Navbar />
+              <main className="flex-1">
+                <Routes>
+                  {/* Public Landing Page for EVERY visitor (guests, farmers, buyers, transporters) */}
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+
+                  {/* Protected Marketplace Routes (Require Authentication) */}
+                  <Route
+                    path="/marketplace"
+                    element={
+                      <ProtectedRoute>
