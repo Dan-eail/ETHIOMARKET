@@ -318,3 +318,93 @@ export const MarketplacePage = () => {
               <span className="text-xs font-bold text-slate-700">100% Certified Organic</span>
             </label>
           </div>
+
+        </div>
+
+        {/* Right Products Grid */}
+        <div className="lg:col-span-3 space-y-6">
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="bg-white rounded-3xl h-96 animate-pulse border border-sand-border"></div>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-sand-border p-12 text-center space-y-4 shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                <PackageOpen className="w-8 h-8" />
+              </div>
+              <h3 className="text-base font-bold text-slate-800">No produce matching your criteria</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Try selecting "All Ethiopian Regions" or resetting your search keywords to view other fresh farm listings.
+              </p>
+              <button
+                onClick={clearAllFilters}
+                className="px-5 py-2.5 rounded-full bg-ethio-700 text-white text-xs font-bold shadow-sm"
+              >
+                Clear Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((prod) => (
+                <ProductCard
+                  key={prod.id}
+                  product={prod}
+                  onNegotiate={(p) => {
+                    setSelectedProduct(p)
+                    setNegotiateOpen(true)
+                  }}
+                  onBuyNow={(p) => {
+                    setSelectedProduct(p)
+                    setDirectOrderOpen(true)
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Modals */}
+      <NegotiateModal
+        product={selectedProduct}
+        isOpen={negotiateOpen}
+        onClose={() => setNegotiateOpen(false)}
+        onSuccess={(quote) => {
+          triggerToast(`Quotation #${quote.quoteNumber} submitted successfully!`)
+        }}
+      />
+
+      <DirectOrderModal
+        product={selectedProduct}
+        isOpen={directOrderOpen}
+        onClose={() => setDirectOrderOpen(false)}
+        onSuccess={(order) => {
+          triggerToast(`Order #${order.orderNumber} confirmed! Stock reserved.`)
+        }}
+      />
+
+      {/* SMART SUPPLIER MATCHING MODAL */}
+      {matchModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-float border border-sand-border my-auto">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-xl bg-emerald-100 text-emerald-800">
+                    <Sparkles className="w-4 h-4" />
+                  </span>
+                  <h3 className="text-lg font-bold text-slate-900">Smart Supplier Match</h3>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Automated rule-based matching based on available harvest stock, regional proximity, verified cooperative licenses, and organic purity.
+                </p>
+              </div>
+              <button
+                onClick={() => setMatchModalOpen(false)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
