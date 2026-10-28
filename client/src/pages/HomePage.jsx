@@ -357,3 +357,84 @@ export const HomePage = () => {
               </div>
 
             </div>
+
+            {/* Right Column: Imagery with Floating Platform Badges */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative mx-auto max-w-md lg:max-w-none">
+                
+                {/* Main Hero Card with Transition */}
+                <div className="rounded-3xl overflow-hidden shadow-float border-4 border-white aspect-[4/5] bg-ethio-950 relative group">
+                  <img
+                    src={heroSlide === 0
+                      ? "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&auto=format&fit=crop&q=80"
+                      : "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&auto=format&fit=crop&q=80"
+                    }
+                    alt="Ethiopian farmer harvesting fresh crops in green agricultural field"
+                    className="w-full h-full object-cover transition-all duration-700 ease-out transform group-hover:scale-105"
+                  />
+                  
+                  {/* Subtle Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ethio-950/90 via-ethio-950/20 to-transparent"></div>
+
+                  {/* Slide Switcher Controls */}
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full z-20">
+                    <button
+                      onClick={() => setHeroSlide(0)}
+                      className={`h-2 rounded-full transition-all ${heroSlide === 0 ? 'w-5 bg-emerald-400' : 'w-2 bg-white/60'}`}
+                      title="Rift Valley Fresh Produce"
+                    />
+                    <button
+                      onClick={() => setHeroSlide(1)}
+                      className={`h-2 rounded-full transition-all ${heroSlide === 1 ? 'w-5 bg-emerald-400' : 'w-2 bg-white/60'}`}
+                      title="Ada'a Magna Teff Grain"
+                    />
+                  </div>
+
+                  {/* Caption on image */}
+                  <div className="absolute bottom-6 left-6 right-6 text-white z-20">
+                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest block mb-1">
+                      {heroSlide === 0 ? "Direct From Source · Meki & Rift Valley" : "Highland Commodities · Ada'a & Bale"}
+                    </span>
+                    <h3 className="text-xl font-extrabold leading-tight">
+                      {heroSlide === 0
+                        ? "Rift Valley Vegetable Harvests"
+                        : "Highland White Teff & Wheat Grains"}
+                    </h3>
+                    <p className="text-xs text-slate-200 mt-1.5 leading-relaxed">
+                      {heroSlide === 0
+                        ? "Wholesale onions, tomatoes, and peppers connected directly from farms to commercial buyers."
+                        : "Export-grade Magna white teff and durum wheat traded with standardized Ethiopian quintals."}
+                    </p>
+
+                    {/* Verified Chain Pill */}
+                    <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-semibold text-emerald-200 border border-white/10">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>Verified Farm Sourcing & Logistics</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Badge 1: Logistics Coordination */}
+                <div className="absolute -top-4 -left-4 sm:-left-6 bg-white p-3.5 rounded-2xl shadow-float border border-sand-border flex items-center gap-3 backdrop-blur-md z-30 animate-float">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-ethio-700 flex items-center justify-center shrink-0">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-extrabold text-slate-900 block">Transportation Fleet</span>
+                    <span className="text-[11px] text-slate-500">Farm Gate to Market Center</span>
+                  </div>
+                </div>
+
+                {/* Floating Badge 2: Payment Escrow */}
+                <div className="absolute -bottom-4 -right-4 sm:-right-6 bg-white p-3.5 rounded-2xl shadow-float border border-sand-border flex items-center gap-3 z-30 animate-float-delayed">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-extrabold text-slate-900 block">Protected Settlement</span>
+                    <span className="text-[11px] text-slate-500">Telebirr & CBE Escrow</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
