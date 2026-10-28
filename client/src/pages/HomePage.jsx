@@ -438,3 +438,73 @@ export const HomePage = () => {
 
               </div>
             </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 2. INTERACTIVE MARKETPLACE PREVIEW */}
+      <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Heading */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block mb-1">
+              Public Marketplace Preview
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+              Explore Agricultural Categories
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl">
+              Preview major agricultural commodities traded across Ethiopian regions. Sign in to view full supplier directories, pricing, and place orders.
+            </p>
+          </div>
+          
+          <button
+            onClick={() => triggerAuthPrompt(
+              '/marketplace',
+              'Sign In to Browse Full Marketplace',
+              'Sign in or create an account to view all active produce listings, current wholesale prices, and seller information.'
+            )}
+            className="text-xs sm:text-sm font-bold text-ethio-700 hover:text-ethio-900 flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <span>View Full Market Catalog</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Category Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {PUBLIC_CATEGORIES.map((cat) => {
+            const IconComponent = cat.icon || Sprout
+            return (
+              <div
+                key={cat.id}
+                onClick={() => triggerAuthPrompt(
+                  `/marketplace?category=${cat.slug}`,
+                  `Sign In to Browse ${cat.name}`,
+                  `Access available ${cat.cropExamples} listings, compare wholesale prices, and connect directly with verified regional producers.`
+                )}
+                className="bg-white rounded-3xl border border-sand-border p-5 card-hover cursor-pointer group shadow-sm flex flex-col justify-between"
+              >
+                <div>
+                  <div className="aspect-[16/9] rounded-2xl overflow-hidden mb-4 bg-sand-subtle relative">
+                    <img
+                      src={cat.imageUrl}
+                      alt={cat.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/90 backdrop-blur-sm text-ethio-800 flex items-center justify-center shadow-sm">
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-white drop-shadow">
+                        {cat.nameAm}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-base font-extrabold text-slate-900 group-hover:text-ethio-700 transition-colors flex items-center justify-between">
+                    <span>{cat.name}</span>
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-ethio-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
