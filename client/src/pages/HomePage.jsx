@@ -648,3 +648,63 @@ export const HomePage = () => {
             {/* Step 2 */}
             <div className="bg-white rounded-3xl p-6 border border-sand-border shadow-sm flex flex-col justify-between">
               <div>
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-extrabold text-lg mb-4">
+                  2
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">Discover Opportunities</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Find agricultural commodities by region, connect with bulk purchasing requests, or browse available cargo loads needing regional transport.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-amber-700">
+                Transparent Matching
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-white rounded-3xl p-6 border border-sand-border shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center font-extrabold text-lg mb-4">
+                  3
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">Connect & Negotiate</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Submit quotation requests, agree on grade specifications and quantities, counter-offer on volume pricing, and finalize binding terms.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-blue-700">
+                Audited Negotiations
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-white rounded-3xl p-6 border border-sand-border shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center font-extrabold text-lg mb-4">
+                  4
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">Coordinate Fulfillment</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Assign verified regional transporters, monitor live haulage progression, and settle payments safely through escrow on delivery confirmation.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-purple-700">
+                Secure Delivery & Payout
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 4. SEPARATE VALUE PROPOSITIONS FOR EACH ROLE */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <div className="text-center max-w-2xl mx-auto">
+          <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block mb-1">
+            Built for Every Agricultural Participant
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+            Tailored Experiences for Every Role
+          </h2>
