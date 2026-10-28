@@ -278,3 +278,82 @@ export const HomePage = () => {
                     <span>Sign-in required to browse results</span>
                   </span>
                 </div>
+
+                <form onSubmit={handleHeroSearch} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Search Input */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={heroSearchInput}
+                        onChange={(e) => setHeroSearchInput(e.target.value)}
+                        placeholder="e.g. Teff, Red Onions, Coffee..."
+                        className="w-full pl-9 pr-3 py-2.5 rounded-2xl bg-sand-bg border border-sand-border text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-ethio-600 placeholder:text-slate-400"
+                      />
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    </div>
+
+                    {/* Region Selector */}
+                    <div className="relative">
+                      <select
+                        value={heroRegion}
+                        onChange={(e) => setHeroRegion(e.target.value)}
+                        className="w-full pl-9 pr-8 py-2.5 rounded-2xl bg-sand-bg border border-sand-border text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-ethio-600 appearance-none"
+                      >
+                        <option value="all">All Ethiopian Regions</option>
+                        <option value="Oromia">Oromia (Meki, Ada'a, Adama)</option>
+                        <option value="Amhara">Amhara (Bahir Dar, Gondar)</option>
+                        <option value="Sidama">Sidama (Hawassa, Yirgalem)</option>
+                        <option value="SNNPR / Sidama">SNNPR & Guji</option>
+                        <option value="Addis Ababa">Addis Ababa Hub</option>
+                        <option value="Tigray">Tigray</option>
+                        <option value="Dire Dawa">Dire Dawa & Harar</option>
+                      </select>
+                      <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-2xl bg-sand-subtle hover:bg-emerald-50 border border-sand-border text-ethio-800 font-bold text-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>Search Marketplace Products</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+              </div>
+
+              {/* Real Platform Capability Trust Indicators (No fake statistics) */}
+              <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200/60 max-w-xl">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-100 text-ethio-800 flex items-center justify-center shrink-0 mt-0.5">
+                    <Sprout className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-extrabold text-slate-900">Direct Farm Sourcing</div>
+                    <div className="text-[11px] text-slate-500">Connecting farmers and buyers</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-extrabold text-slate-900">Unified Marketplace</div>
+                    <div className="text-[11px] text-slate-500">Grains, coffee, veg & oilseeds</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0 mt-0.5">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-extrabold text-slate-900">Haulage Coordination</div>
+                    <div className="text-[11px] text-slate-500">Regional logistics dispatch</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
