@@ -508,3 +508,73 @@ export const HomePage = () => {
                   <h3 className="text-base font-extrabold text-slate-900 group-hover:text-ethio-700 transition-colors flex items-center justify-between">
                     <span>{cat.name}</span>
                     <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-ethio-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                  </h3>
+
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {cat.cropExamples}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                  <span className="flex items-center gap-1 text-ethio-700 font-bold">
+                    <Lock className="w-3 h-3" />
+                    <span>Member Access Required</span>
+                  </span>
+                  <span className="group-hover:text-slate-700 transition-colors">
+                    Preview Category →
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Real Public Product Previews (Sanitized, no private contact info) */}
+        {previewProducts.length > 0 && (
+          <div className="mt-14 pt-10 border-t border-sand-border">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block">
+                  Live Harvest Previews
+                </span>
+                <h3 className="text-xl font-extrabold text-ethio-950">
+                  Sample Wholesale Produce in Stock
+                </h3>
+              </div>
+              <span className="text-xs font-semibold text-slate-500 hidden sm:inline">
+                Sign in to view complete seller details & submit quotation
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {previewProducts.map((prod) => (
+                <div
+                  key={prod.id}
+                  onClick={() => triggerAuthPrompt(
+                    `/products/${prod.id}`,
+                    `Sign In to View ${prod.title}`,
+                    'Complete harvest specifications, seller verification status, and direct purchase / quotation options require sign-in.'
+                  )}
+                  className="bg-white rounded-3xl border border-sand-border p-4 card-hover cursor-pointer shadow-sm group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-sand-subtle relative mb-3">
+                      <img
+                        src={prod.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=80'}
+                        alt={prod.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {prod.isOrganic && (
+                        <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold shadow-sm">
+                          Organic
+                        </span>
+                      )}
+                      <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold">
+                        {prod.unit}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 mb-1">
+                      <MapPin className="w-3.5 h-3.5 text-ethio-600" />
+                      <span>{prod.city}, {prod.region}</span>
+                    </div>
