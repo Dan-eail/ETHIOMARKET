@@ -578,3 +578,73 @@ export const HomePage = () => {
                       <MapPin className="w-3.5 h-3.5 text-ethio-600" />
                       <span>{prod.city}, {prod.region}</span>
                     </div>
+
+                    <h4 className="text-sm font-extrabold text-slate-900 group-hover:text-ethio-700 transition-colors line-clamp-1">
+                      {prod.title}
+                    </h4>
+
+                    {prod.variety && (
+                      <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
+                        Variety: {prod.variety} · {prod.grade || 'Standard Grade'}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Indicative Price</span>
+                      <span className="text-sm font-extrabold text-ethio-900">
+                        {prod.pricePerUnit?.toLocaleString()} ETB <span className="text-[10px] font-normal text-slate-500">/ {prod.unit?.toLowerCase()}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-xs font-bold text-ethio-700 group-hover:text-ethio-900">
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>View Details</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </section>
+
+      {/* 3. HOW ETHIOMARKET WORKS */}
+      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-sand-subtle rounded-3xl border border-sand-border p-8 lg:p-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block mb-2">
+              Four-Step Agricultural Workflow
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+              How EthioMarket Works
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-2">
+              A transparent, connected process designed for Ethiopian smallholders, commercial agro-enterprises, wholesale buyers, and regional haulage fleets.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Step 1 */}
+            <div className="bg-white rounded-3xl p-6 border border-sand-border shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-ethio-800 flex items-center justify-center font-extrabold text-lg mb-4">
+                  1
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">Create an Account</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Register for free and select your primary role as a Farmer, Commercial Buyer, or Transporter to unlock specialized workspaces and tools.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-ethio-700">
+                Tailored Workspaces
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-white rounded-3xl p-6 border border-sand-border shadow-sm flex flex-col justify-between">
+              <div>
