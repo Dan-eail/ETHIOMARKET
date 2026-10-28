@@ -118,3 +118,93 @@ export const HomePage = () => {
   // Switch hero image every 7 seconds
   useEffect(() => {
     const timer = setInterval(() => {
+      setHeroSlide(prev => (prev === 0 ? 1 : 0))
+    }, 7000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Load public preview data
+  useEffect(() => {
+    const fetchPublicData = async () => {
+      try {
+        const [catRes, prodRes] = await Promise.all([
+          api.getCategories().catch(() => ({ categories: [] })),
+          api.getProducts({ limit: 6 }).catch(() => ({ products: [] }))
+        ])
+        if (catRes?.categories && catRes.categories.length > 0) {
+          setCategories(catRes.categories)
+        } else {
+          setCategories(PUBLIC_CATEGORIES)
+        }
+        setPreviewProducts(prodRes?.products || [])
+      } catch (err) {
+        console.error('Failed to load public landing data:', err)
+        setCategories(PUBLIC_CATEGORIES)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPublicData()
+  }, [])
+
+  // Trigger protected action prompt with specific context and destination
+  const triggerAuthPrompt = (targetUrl, title, description) => {
+    if (isAuthenticated) {
+      navigate(targetUrl)
+    } else {
+      setAuthPromptConfig({
+        targetUrl,
+        title: title || 'Sign In to Access Marketplace Features',
+        description: description || 'Product searching, verified wholesale pricing, and supplier negotiations require an EthioMarket account.'
+      })
+      setAuthPromptOpen(true)
+    }
+  }
+
+  // Hero Search Submission
+  const handleHeroSearch = (e) => {
+    e.preventDefault()
+    const query = heroSearchInput.trim()
+    const params = new URLSearchParams()
+    if (query) params.append('search', query)
+    if (heroRegion !== 'all') params.append('region', heroRegion)
+    const targetUrl = `/marketplace${params.toString() ? `?${params.toString()}` : ''}`
+
+    if (isAuthenticated) {
+      navigate(targetUrl)
+    } else {
+      triggerAuthPrompt(
+        targetUrl,
+        query ? `Sign In to Search for "${query}"` : 'Sign In to Search Ethiopian Produce',
+        'Direct product searching, wholesale price filtering, and regional availability matching are reserved for registered EthioMarket accounts.'
+      )
+    }
+  }
+
+  const faqItems = [
+    {
+      q: 'What is EthioMarket?',
+      a: 'EthioMarket is an agricultural exchange platform engineered specifically for Ethiopia. It brings smallholders, commercial farms, wholesale buyers, and regional transporters together into one transparent ecosystem, supporting ETB pricing and standard Ethiopian measurement units (Quintals, Kilograms, Crates, and Sacks).'
+    },
+    {
+      q: 'Who can use the platform?',
+      a: 'EthioMarket serves four distinct participant groups: (1) Farmers and agricultural cooperatives wanting to sell harvests at fair prices; (2) Commercial and institutional buyers seeking direct farm sourcing without intermediary markups; (3) Logistics providers and truck owners seeking cargo haulage jobs; and (4) Platform administrators maintaining market integrity and verifying user credentials.'
+    },
+    {
+      q: 'How can farmers list products?',
+      a: 'After creating a free Farmer account, producers can access their dedicated Farmer Workspace. There, they can list crop varieties, specify harvest dates, set minimum order quantities, input available stock in Quintals or Kilograms, specify farm-gate ETB prices, and receive direct buyer quotation requests.'
+    },
+    {
+      q: 'How can buyers discover products?',
+      a: 'Registered commercial buyers can search the marketplace catalog, filter by Ethiopian agricultural region (Oromia, Amhara, Sidama, etc.) and crop category, compare price benchmarks, submit bulk Requests for Quotation (RFQs), counter-negotiate terms, and finalize orders with Telebirr or CBE Birr settlement.'
+    },
+    {
+      q: 'How do transporters participate?',
+      a: 'Transporters register their vehicle fleet (such as Isuzu, FSR, or pickup trucks) in the Transporter Workspace. They can browse available cargo deliveries along major regional corridors (e.g. Meki to Addis Ababa, Hawassa to Merkato), claim haulage jobs, and record live milestone tracking from farm gate pickup to delivery.'
+    },
+    {
+      q: 'Do I need an account to search for products?',
+      a: 'No account is needed to explore our public landing page, learn how the platform works, or view public commodity category previews. However, to execute product searches, filter inventory, view protected seller contact details, negotiate quotations, and purchase products, you must sign in or register.'
+    },
+    {
+      q: 'How do registration and verification work?',
