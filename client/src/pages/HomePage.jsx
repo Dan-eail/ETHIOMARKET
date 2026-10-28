@@ -758,3 +758,444 @@ export const HomePage = () => {
               className="w-full py-3 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 group"
             >
               <span>Join as a Farmer</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {/* For Buyers */}
+          <div id="for-buyers" className="bg-white rounded-3xl p-8 border border-sand-border shadow-card flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center">
+                <ShoppingBag className="w-7 h-7 text-blue-700" />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">
+                  Wholesalers & Food Processors
+                </span>
+                <h3 className="text-2xl font-extrabold text-ethio-950">For Buyers</h3>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Source high-volume agricultural produce directly from verified farming hubs across Oromia, Amhara, and Sidama.
+              </p>
+
+              <ul className="space-y-2.5 pt-2 text-xs text-slate-700">
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span><strong>Discover agricultural suppliers</strong> and verified cooperatives by production region.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span><strong>Compare available products and prices</strong> with regional market price intelligence.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span><strong>Request quotations and negotiate</strong> volume discounts directly with farm managers.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span><strong>Manage purchases and orders</strong> with protected Telebirr & CBE escrow settlements.</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              to="/register?role=BUYER"
+              className="w-full py-3 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 group"
+            >
+              <span>Join as a Buyer</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {/* For Transporters */}
+          <div id="for-transporters" className="bg-white rounded-3xl p-8 border border-sand-border shadow-card flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                <Truck className="w-7 h-7 text-amber-700" />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">
+                  Haulage & Fleet Operators
+                </span>
+                <h3 className="text-2xl font-extrabold text-ethio-950">For Transporters</h3>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Keep your trucks running on profitable regional corridors by claiming verified agricultural cargo loads needing transit.
+              </p>
+
+              <ul className="space-y-2.5 pt-2 text-xs text-slate-700">
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span><strong>Discover available transportation opportunities</strong> along major regional trade corridors.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span><strong>Manage delivery assignments</strong> and register vehicle fleets (Isuzu, FSR, pickups).</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span><strong>Update delivery progress</strong> live from farm pickup through transit to unloading.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span><strong>Coordinate fulfillment</strong> and earn timely freight payouts upon digital delivery signoff.</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              to="/register?role=TRANSPORTER"
+              className="w-full py-3 rounded-2xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 group"
+            >
+              <span>Join as a Transporter</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* 5. TRUST, TRANSPARENCY, AND SECURITY */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-sand-subtle rounded-3xl border border-sand-border p-8 sm:p-12">
+          
+          <div className="max-w-2xl mb-10">
+            <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block mb-1">
+              Marketplace Integrity & Safety
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+              Trust, Transparency, and Security
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              EthioMarket implements verified identity workflows, role-based access control, and transaction safeguards tailored to Ethiopian agricultural commerce.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <div className="bg-white rounded-2xl p-5 border border-sand-border shadow-sm space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-ethio-800 flex items-center justify-center mb-3">
+                <BadgeCheck className="w-5 h-5 text-emerald-700" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Cooperative & Producer KYC</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Official verification of farm credentials through regional agricultural bureaus and trade licenses to prevent fraudulent listings.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-sand-border shadow-sm space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center mb-3">
+                <ShieldCheck className="w-5 h-5 text-blue-700" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Role-Based Access Control</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Backend-enforced route authorization and token security ensure private pricing terms, orders, and customer contacts remain strictly confidential.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-sand-border shadow-sm space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
+                <CreditCard className="w-5 h-5 text-amber-700" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Escrow Payment Protection</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Integration with Telebirr and Commercial Bank of Ethiopia (CBE) releases supplier payouts only after destination delivery is digitally confirmed.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-sand-border shadow-sm space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center mb-3">
+                <Scale className="w-5 h-5 text-purple-700" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Standardized Ethiopian Units</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Transactions utilize native trade standards: Quintal (100kg), Kilogram, Crate, and Sack, preventing volume confusion during wholesale deals.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-sand-border shadow-sm space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center mb-3">
+                <FileText className="w-5 h-5 text-rose-700" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Tamper-Evident Audit Records</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Every quotation negotiation, counter-offer, order status update, and transit event is recorded with timestamps for transparent reconciliation.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-sand-border shadow-sm space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center mb-3">
+                <Truck className="w-5 h-5 text-teal-700" />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Logistics Milestone Verification</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Direct waybill tracking from farm gate loading to regional transit, ensuring reliable delivery confirmation before order closing.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. REAL PLATFORM FEATURES */}
+      <section id="platform-features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block mb-1">
+            Core Capabilities
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+            Platform Capabilities at a Glance
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Built from the ground up to solve the real operational challenges of Ethiopian agriculture.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-ethio-700 flex items-center justify-center">
+              <Sprout className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Agricultural Product Discovery</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Explore diverse Ethiopian produce across major growing regions with category filters and crop varieties.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center">
+              <Layers className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Inventory Management</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Producers track harvest batches, available stock in quintals, low-stock alerts, and minimum order quantities.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <Users className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Buyer-Seller Connections</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Direct connection channels connecting wholesale purchasers with smallholder associations and cooperatives.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center">
+              <Scale className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Quotations & Negotiations</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Submit custom volume RFQs, propose counter-offers on prices and grades, and accept binding agreements online.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Order Management & Invoicing</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              End-to-end procurement workflows with printable ETB invoices, payment receipts, and re-order capabilities.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center">
+              <Truck className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Transportation Coordination</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Dispatch logistics jobs to verified fleet vehicles with live status: Picked Up, In Transit, and Delivered.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Payment Processing</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Flexible payment methods including Cash-on-Delivery, Telebirr digital mobile money, and CBE Birr escrow.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
+              <Building className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-900">Regional Price Benchmarks</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Transparent market price updates inspired by Ethiopian Commodity Exchange (ECX) trends across key hubs.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 7. FREQUENTLY ASKED QUESTIONS (ACCORDION) */}
+      <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div className="text-center mb-10">
+          <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block mb-1">
+            Got Questions?
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Everything you need to know about navigating and transacting on EthioMarket.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {faqItems.map((item, index) => {
+            const isOpen = openFaqIndex === index
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-sand-border overflow-hidden transition-all shadow-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? -1 : index)}
+                  className="w-full text-left p-5 flex items-center justify-between gap-4 font-extrabold text-sm sm:text-base text-slate-900 hover:text-ethio-700 transition-colors"
+                >
+                  <span>{item.q}</span>
+                  <div className={`w-8 h-8 rounded-xl bg-sand-subtle flex items-center justify-center shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 bg-emerald-100 text-ethio-800' : 'text-slate-500'}`}>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-5 pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3 animate-fade-in">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+      </section>
+
+      {/* 8. ABOUT US SECTION */}
+      <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-sand-subtle rounded-3xl border border-sand-border p-8 sm:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <div className="lg:col-span-7 space-y-4">
+              <span className="text-xs font-extrabold text-ethio-700 uppercase tracking-wider block">
+                Our Purpose & Mission
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
+                About EthioMarket Technologies
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                EthioMarket was created to bridge the information and logistical gaps in Ethiopia’s agricultural trade. For generations, farmers have faced opaque commodity pricing and excessive broker deductions, while commercial food buyers struggled with unreliable supply chains.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                By uniting farmers, commercial buyers, and independent transporters onto a single digital platform with native Ethiopian currency and measurement standards, EthioMarket establishes transparent price discovery, fair negotiation, and coordinated regional haulage.
+              </p>
+
+              <div className="pt-2 flex flex-wrap gap-4 text-xs font-bold text-slate-700">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Headquartered in Addis Ababa, Ethiopia</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Integrated Ethiopian Measurement Units</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-sand-border shadow-sm space-y-4">
+              <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                Regional Hub Coverage
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Active trading corridors connecting agricultural production clusters with central consumption markets:
+              </p>
+              
+              <div className="space-y-2.5 text-xs text-slate-700">
+                <div className="p-2.5 rounded-xl bg-sand-bg border border-sand-border flex items-center justify-between">
+                  <span className="font-bold">Meki & Ada'a Hub (Oromia)</span>
+                  <span className="text-[11px] text-ethio-700 font-semibold">Teff & Vegetables</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-sand-bg border border-sand-border flex items-center justify-between">
+                  <span className="font-bold">Hawassa Corridor (Sidama)</span>
+                  <span className="text-[11px] text-ethio-700 font-semibold">Coffee & Avocados</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-sand-bg border border-sand-border flex items-center justify-between">
+                  <span className="font-bold">Addis Ababa Wholesale Center</span>
+                  <span className="text-[11px] text-ethio-700 font-semibold">Merkato & Processing Hub</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 9. FINAL CALL TO ACTION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-ethio-950 rounded-3xl p-8 sm:p-14 text-white relative overflow-hidden shadow-float">
+          
+          <div className="relative z-10 max-w-2xl space-y-4">
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest block">
+              Join the Agricultural Exchange
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              Be Part of a More Connected Agricultural Marketplace.
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Whether you are an agricultural producer looking for fair farm-gate prices, a wholesale buyer seeking reliable suppliers, or a transporter looking for profitable routes — EthioMarket provides the tools you need.
+            </p>
+
+            <div className="pt-4 flex flex-wrap gap-3">
+              <Link
+                to="/register"
+                className="px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-ethio-950 font-bold text-xs sm:text-sm shadow-md transition-colors flex items-center gap-2"
+              >
+                <span>Create Your Account</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              
+              <Link
+                to="/login"
+                className="px-6 py-3.5 rounded-2xl bg-ethio-900 hover:bg-ethio-800 text-white font-bold text-xs sm:text-sm border border-ethio-800 transition-colors flex items-center gap-2"
+              >
+                <span>Sign In</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Decorative background leaf badge */}
+          <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-emerald-900/20 blur-2xl pointer-events-none"></div>
+        </div>
+      </section>
+
+      {/* Protected Action Auth Modal */}
+      <AuthPromptModal
+        isOpen={authPromptOpen}
+        onClose={() => setAuthPromptOpen(false)}
+        title={authPromptConfig.title}
+        description={authPromptConfig.description}
+        targetUrl={authPromptConfig.targetUrl}
+      />
+
+    </div>
+  )
+}
+
+export default HomePage
