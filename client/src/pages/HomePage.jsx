@@ -708,3 +708,53 @@ export const HomePage = () => {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-ethio-950">
             Tailored Experiences for Every Role
           </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Explore how EthioMarket provides dedicated workspaces and workflows built specifically for your agricultural business needs.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* For Farmers */}
+          <div id="for-farmers" className="bg-white rounded-3xl p-8 border border-sand-border shadow-card flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-ethio-800 flex items-center justify-center">
+                <Sprout className="w-7 h-7 text-ethio-700" />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-ethio-700 uppercase tracking-wider">
+                  Producers & Cooperatives
+                </span>
+                <h3 className="text-2xl font-extrabold text-ethio-950">For Farmers</h3>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Empower your farm or cooperative by listing produce directly to commercial purchasers without intermediary broker deductions.
+              </p>
+
+              <ul className="space-y-2.5 pt-2 text-xs text-slate-700">
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span><strong>Present agricultural products</strong> with harvest dates, grades, and ETB farm-gate pricing.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span><strong>Manage available inventory</strong> in Ethiopian measurement units (Quintals, KG, Crates).</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span><strong>Connect with potential buyers</strong> directly and negotiate transparent RFQ counter-offers.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span><strong>Manage orders and sales</strong> with guaranteed payouts upon verified destination arrival.</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              to="/register?role=FARMER"
+              className="w-full py-3 rounded-2xl bg-ethio-700 hover:bg-ethio-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 group"
+            >
+              <span>Join as a Farmer</span>
