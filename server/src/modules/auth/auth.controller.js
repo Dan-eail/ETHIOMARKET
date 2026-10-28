@@ -53,7 +53,7 @@ export const register = async (req, res, next) => {
             create: {
               farmName: validated.farmName || `${validated.name}'s Farm`,
               region: validated.region || 'Oromia',
-              city: validated.city || 'Meki',
+              woreda: validated.city || null,
             }
           }
         }),

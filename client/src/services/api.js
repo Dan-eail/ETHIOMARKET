@@ -116,6 +116,7 @@ export const api = {
 
   // KYC Identity Verification (Fayda + Manual Fallback)
   getKycStatus: () => apiRequest('/kyc/status'),
+  getFaydaDiagnostics: () => apiRequest('/kyc/fayda/diagnostics'),
   initiateFayda: (payload) => apiRequest('/kyc/fayda/initiate', { method: 'POST', body: JSON.stringify(payload) }),
   verifyFaydaCallback: (payload) => apiRequest('/kyc/fayda/callback', { method: 'POST', body: JSON.stringify(payload) }),
   submitManualKyc: (payload) => apiRequest('/kyc/manual/submit', { method: 'POST', body: JSON.stringify(payload) }),

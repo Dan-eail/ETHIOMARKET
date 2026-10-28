@@ -5,6 +5,7 @@ import {
   getKycStatus,
   initiateFaydaSession,
   handleFaydaCallback,
+  getFaydaDiagnostics,
   submitManualReview,
   getAdminReviewQueue,
   approveManualReview,
@@ -19,6 +20,7 @@ router.use(authenticate)
 
 // User-facing KYC routes
 router.get('/status', getKycStatus)
+router.get('/fayda/diagnostics', getFaydaDiagnostics)
 router.post('/fayda/initiate', initiateFaydaSession)
 router.post('/fayda/callback', handleFaydaCallback)
 router.post('/manual/submit', submitManualReview)

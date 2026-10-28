@@ -42,7 +42,8 @@ export const getKycStatus = async (req, res, next) => {
         status: r.status,
         createdAt: r.createdAt
       })),
-      faydaConfigured: FaydaService.isConfigured()
+      faydaConfigured: FaydaService.isConfigured(),
+      faydaDiagnostic: FaydaService.getDiagnosticStatus()
     })
   } catch (err) {
     next(err)
@@ -64,7 +65,7 @@ export const initiateFaydaSession = async (req, res, next) => {
 
 export const handleFaydaCallback = async (req, res, next) => {
   try {
-    const { code, state, mockClaims } = req.body
+    const { code, state, error, errorDescription } = req.body
     if (!state) {
       return res.status(400).json({ error: 'Missing OAuth2 state parameter.' })
     }
@@ -72,13 +73,23 @@ export const handleFaydaCallback = async (req, res, next) => {
     const result = await FaydaService.handleCallback({
       code,
       state,
-      requestingUserId: req.user.id,
-      mockClaims
+      error,
+      errorDescription,
+      requestingUserId: req.user.id
     })
 
     res.json(result)
   } catch (err) {
     res.status(400).json({ error: err.message })
+  }
+}
+
+export const getFaydaDiagnostics = async (req, res, next) => {
+  try {
+    const diagnostic = FaydaService.getDiagnosticStatus()
+    res.json(diagnostic)
+  } catch (err) {
+    next(err)
   }
 }
 

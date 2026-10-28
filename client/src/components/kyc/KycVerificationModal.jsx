@@ -10,13 +10,14 @@ import {
   X,
   ExternalLink,
   Info,
-  Lock
+  Lock,
+  ArrowRight
 } from 'lucide-react'
 import { api } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 
 export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess }) => {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [activeTab, setActiveTab] = useState('fayda') // 'fayda' or 'manual'
   const [loading, setLoading] = useState(false)
   const [kycStatus, setKycStatus] = useState(null)
@@ -25,7 +26,6 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
 
   // Fayda State
   const [faydaConsent, setFaydaConsent] = useState(false)
-  const [faydaSession, setFaydaSession] = useState(null)
 
   // Manual Review State
   const [docType, setDocType] = useState('KEBELE_ID')
@@ -62,39 +62,18 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
     setError('')
     try {
       const res = await api.initiateFayda({ consentGiven: true })
-      setFaydaSession(res)
       if (res.authUrl) {
+        // Real-Time Redirect to official Fayda Identity Provider portal (id.gov.et)
         window.location.href = res.authUrl
       } else {
-        setSuccessMsg(res.message || 'Fayda session initiated in sandbox mode.')
+        // Not configured with active partner credentials
+        setError(
+          res.message ||
+          'Fayda Partner credentials are unconfigured. Please complete onboarding at partner.fayda.et or submit for Manual Document Review.'
+        )
       }
     } catch (err) {
       setError(err.message || 'Failed to initiate Fayda session.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSimulateFaydaTestCallback = async () => {
-    if (!faydaSession?.state) return
-    setLoading(true)
-    setError('')
-    try {
-      const res = await api.verifyFaydaCallback({
-        state: faydaSession.state,
-        code: 'TEST_AUTH_CODE_' + Date.now(),
-        mockClaims: {
-          fullName: user?.name || 'Verified Ethiopian Citizen',
-          gender: 'MALE',
-          dateOfBirth: '1988-06-12',
-          faydaId: 'FIN-' + Math.floor(100000000000 + Math.random() * 900000000000)
-        }
-      })
-      setSuccessMsg('Fayda identity verified successfully! Your account is now verified.')
-      await loadKycStatus()
-      if (onVerificationSuccess) onVerificationSuccess(res)
-    } catch (err) {
-      setError(err.message || 'Fayda test callback failed.')
     } finally {
       setLoading(false)
     }
@@ -144,6 +123,9 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
 
       setSuccessMsg('Manual verification review submitted! An EthioMarket administrator will inspect your documentation.')
       await loadKycStatus()
+      if (typeof refreshUser === 'function') {
+        await refreshUser()
+      }
     } catch (err) {
       setError(err.message || 'Failed to submit manual review.')
     } finally {
@@ -156,6 +138,7 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
   const isVerified = kycStatus?.isVerified || user?.isVerified
   const currentStatus = kycStatus?.currentStatus || (isVerified ? 'VERIFIED' : 'NOT_STARTED')
   const currentMethod = kycStatus?.currentMethod || 'FAYDA'
+  const isFaydaConfigured = kycStatus?.faydaConfigured
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -246,7 +229,7 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
               {kycStatus?.latestRecord && (
                 <div className="pt-2 border-t border-emerald-200/60 text-[11px] text-emerald-900 grid grid-cols-2 gap-2">
                   <div>Method: <strong>{kycStatus.latestRecord.method}</strong></div>
-                  <div>Verified: <strong>{new Date(kycStatus.latestRecord.createdAt).toLocaleDateString()}</strong></div>
+                  <div>Verified: <strong>{new Date(kycStatus.latestRecord.reviewedAt || kycStatus.latestRecord.createdAt).toLocaleDateString()}</strong></div>
                 </div>
               )}
             </div>
@@ -286,12 +269,62 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
                   <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 text-xs text-emerald-900 space-y-2">
                     <div className="flex items-center gap-2 font-bold">
                       <Lock className="w-4 h-4 text-emerald-700" />
-                      <span>Ethiopia National ID Program (NIDP)</span>
+                      <span>Official Ethiopia National ID Program (NIDP)</span>
                     </div>
                     <p className="leading-relaxed">
-                      Instant, cryptographically verified authentication via Ethiopia's Fayda identity system. EthioMarket verifies your name and citizenship without retaining biometric records or unnecessary personal data.
+                      Instant, cryptographically validated verification via Ethiopia's Fayda identity system. EthioMarket connects directly with Fayda through the OpenID Connect (eSignet) standard.
                     </p>
                   </div>
+
+                  {/* Flow Explanation */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                    <span className="font-bold text-slate-900 block">How Official Fayda Verification Works:</span>
+                    <ol className="list-decimal pl-4 space-y-1.5 text-[11px] text-slate-600">
+                      <li>
+                        <strong>Consent & Redirect:</strong> You grant consent and are redirected to the official government portal at <code className="text-emerald-800">id.gov.et/authentication</code>.
+                      </li>
+                      <li>
+                        <strong>Official OTP Authentication:</strong> Fayda sends an OTP directly to the phone number registered in the National ID database, which you verify on Fayda's secure page.
+                      </li>
+                      <li>
+                        <strong>Signed Assertion:</strong> Fayda returns an authorization code with cryptographic token claims directly to EthioMarket's secure backend.
+                      </li>
+                      <li>
+                        <strong>Instant KYC Approval:</strong> Your identity is verified without storing raw biometric data or unnecessary personal information.
+                      </li>
+                    </ol>
+                  </div>
+
+                  {!isFaydaConfigured && (
+                    <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 space-y-2">
+                      <div className="flex items-center gap-2 font-bold text-amber-800">
+                        <Info className="w-4 h-4 shrink-0" />
+                        <span>Fayda Partner Onboarding Status</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-amber-800">
+                        EthioMarket server is currently running in <strong>CONFIGURATION_REQUIRED</strong> mode. Active partner credentials from the official portal (<code className="font-mono">partner.fayda.et</code>) must be configured in the server environment.
+                      </p>
+                      <div className="flex items-center gap-3 pt-1">
+                        <a
+                          href="https://partner.fayda.et"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 underline hover:text-amber-950"
+                        >
+                          <span>Fayda Partner Portal</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                        <span className="text-amber-400">•</span>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('manual')}
+                          className="text-xs font-bold text-emerald-800 hover:text-emerald-900 underline"
+                        >
+                          Use Manual Document Review Fallback →
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="p-4 rounded-2xl border border-sand-border space-y-3 bg-white">
                     <label className="flex items-start gap-3 cursor-pointer">
@@ -302,7 +335,7 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
                         className="mt-1 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"
                       />
                       <span className="text-xs text-slate-700 leading-normal">
-                        I hereby grant consent to EthioMarket to initiate a digital authentication session with the National ID Program (Fayda) to verify my identity for agricultural commerce.
+                        I hereby grant consent to EthioMarket to initiate a digital authentication session with the National ID Program (Fayda) to verify my identity for agricultural commerce according to Ethiopian Data Protection Principles.
                       </span>
                     </label>
 
@@ -313,29 +346,8 @@ export const KycVerificationModal = ({ isOpen, onClose, onVerificationSuccess })
                       className="w-full py-3 px-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
                     >
                       <Fingerprint className="w-4 h-4" />
-                      <span>{loading ? 'Connecting to Fayda...' : 'Authenticate with Fayda National ID'}</span>
+                      <span>{loading ? 'Connecting to Fayda Portal...' : 'Proceed to Official Fayda Authentication'}</span>
                     </button>
-
-                    {/* Sandbox / Local Test Simulator when session initiated */}
-                    {faydaSession && (
-                      <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                          <Info className="w-4 h-4 text-slate-500" />
-                          <span>Sandbox Test Simulator</span>
-                        </div>
-                        <p className="text-[11px] text-slate-600">
-                          Active OIDC session state: <code className="bg-white px-1.5 py-0.5 rounded border text-[10px]">{faydaSession.state.slice(0, 16)}...</code>
-                        </p>
-                        <button
-                          type="button"
-                          onClick={handleSimulateFaydaTestCallback}
-                          disabled={loading}
-                          className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors"
-                        >
-                          Simulate Verified Fayda OIDC Return
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               ) : (

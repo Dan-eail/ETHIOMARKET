@@ -3,6 +3,9 @@ node_modules/
 dev.db
 dev.db-journal
 dist/
+.vite/
+client/.vite/
+uploads/
 .DS_Store
 *.log
 npm-debug.log*

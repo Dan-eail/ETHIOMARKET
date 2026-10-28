@@ -18,6 +18,7 @@ import { BuyerDashboard } from './pages/buyer/BuyerDashboard'
 import { TransporterDashboard } from './pages/transporter/TransporterDashboard'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { PaymentVerifyPage } from './pages/checkout/PaymentVerifyPage'
+import { FaydaCallbackPage } from './pages/kyc/FaydaCallbackPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +66,14 @@ export function App() {
                     element={
                       <ProtectedRoute>
                         <PaymentVerifyPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/kyc/fayda/callback"
+                    element={
+                      <ProtectedRoute>
+                        <FaydaCallbackPage />
                       </ProtectedRoute>
                     }
                   />
