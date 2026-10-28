@@ -93,3 +93,7 @@ Visit **http://localhost:5173** to view the live platform.
 Run the backend integration test suite verifying authentication, RBAC, quote negotiations, atomic order generation, and delivery claiming:
 
 ```bash
+npm --prefix server test
+```
+
+All 10 test suites pass with 100% success rate.

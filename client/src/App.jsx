@@ -48,3 +48,72 @@ export function App() {
                     path="/marketplace"
                     element={
                       <ProtectedRoute>
+                        <MarketplacePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/products/:id"
+                    element={
+                      <ProtectedRoute>
+                        <ProductDetailPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/checkout/verify"
+                    element={
+                      <ProtectedRoute>
+                        <PaymentVerifyPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Protected Role-Specific Workspaces & Dashboards */}
+                  <Route
+                    path="/dashboard/farmer"
+                    element={
+                      <ProtectedRoute allowedRoles={['FARMER', 'ADMIN']}>
+                        <FarmerDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/buyer"
+                    element={
+                      <ProtectedRoute allowedRoles={['BUYER', 'ADMIN']}>
+                        <BuyerDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/transporter"
+                    element={
+                      <ProtectedRoute allowedRoles={['TRANSPORTER', 'ADMIN']}>
+                        <TransporterDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/admin"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Fallback to Shared Landing Page */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </BrowserRouter>
+        </LanguageProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  )
+}
+
+export default App
